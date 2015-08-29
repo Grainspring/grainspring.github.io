@@ -12,7 +12,7 @@ excerpt: Blink How To Work Series。
 ## V8WindowShell
 V8WindowShell represents all the per-global object state for a Frame that persist between navigations.
 
-###Class Define
+> * Class Define
 	55 class V8WindowShell {
 	56 public:
 	57     static PassOwnPtr<V8WindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
@@ -40,7 +40,7 @@ V8WindowShell represents all the per-global object state for a Frame that persis
 	109     ScopedPersistent<v8::Object> m_document; // also to m_document.
 	110 };
 
-###Construct Function
+> * Construct Function
 We should provide a frame and world and isolate to construct it.
 
 	81 PassOwnPtr<V8WindowShell> V8WindowShell::create(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
@@ -55,7 +55,7 @@ We should provide a frame and world and isolate to construct it.
 	90 {
 	91 }
 
-###initializeIfNeeded
+> * initializeIfNeeded
 	147 // Create a new environment and setup the global object.
 	148 //
 	149 // The global object corresponds to a DOMWindow instance. However, to
@@ -163,7 +163,7 @@ We should provide a frame and world and isolate to construct it.
 	252     return true;
 	253 }
 
-###createContext
+> * createContext
 	255 void V8WindowShell::createContext()
 	256 {
 	257     // The activeDocumentLoader pointer could be 0 during frame shutdown.
@@ -189,7 +189,7 @@ We should provide a frame and world and isolate to construct it.
 	296     HistogramSupport::histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 	297 }
 
-###installDOMWindow
+> * installDOMWindow
 	299 bool V8WindowShell::installDOMWindow()
 	300 {
 	301     DOMWrapperWorld::setInitializingWindow(true);
@@ -223,7 +223,7 @@ We should provide a frame and world and isolate to construct it.
 	329     return true;
 	330 }
 
-###updateDocumentProperty
+> * updateDocumentProperty
 	338 void V8WindowShell::updateDocumentProperty()
 	339 {
 	340     if (!m_world->isMainWorld())
@@ -254,7 +254,7 @@ We should provide a frame and world and isolate to construct it.
 	365     toInnerGlobalObject(context)->SetHiddenValue(V8HiddenPropertyName::document(), documentWrapper);
 	366 }
 
-###clearForClose
+> * clearForClose
 	112 void V8WindowShell::clearForClose(bool destroyGlobal)
 	113 {
 	114     if (destroyGlobal)
@@ -288,7 +288,7 @@ We should provide a frame and world and isolate to construct it.
 
 ##V8PerContextData
 
-###Class Define
+> * Class Define
 	61 class V8PerContextData {
 	62 public:
 	63     static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context> context)
@@ -340,7 +340,7 @@ We should provide a frame and world and isolate to construct it.
 	148     OwnPtr<CustomElementBindingMap> m_customElementBindings;
 	149 };
 
-###init
+> * init
 	61 #define V8_STORE_PRIMORDIAL(name, Name) \
 	62 { \
 	63     ASSERT(m_##name##Prototype.isEmpty()); \
@@ -371,7 +371,7 @@ We should provide a frame and world and isolate to construct it.
 	88 }
 	90 #undef V8_STORE_PRIMORDIAL
 
-###dispose
+> * dispose
 	49 void V8PerContextData::dispose()
 	50 {
 	51     v8::HandleScope handleScope(m_isolate);
@@ -385,7 +385,7 @@ We should provide a frame and world and isolate to construct it.
 	59 }
 
 ## DOMWrapperWorld
-###Class Define
+> * Class Define
 This class represent a collection of DOM wrappers for a specific world.
 
 	49 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
@@ -424,7 +424,7 @@ This class represent a collection of DOM wrappers for a specific world.
 	122
 	123 DOMWrapperWorld* mainThreadNormalWorld();
 
-###mainThreadNormalWorld
+> * mainThreadNormalWorld
 	55 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::createMainWorld()
 	56 {
 	57     return adoptRef(new DOMWrapperWorld(mainWorldId, mainWorldExtensionGroup));
@@ -444,7 +444,7 @@ This class represent a collection of DOM wrappers for a specific world.
 	84     return cachedNormalWorld.get();
 	85 }
 
-###ensureIsolatedWorld
+> * ensureIsolatedWorld
 	107 typedef HashMap<int, DOMWrapperWorld*> WorldMap;
 	108 static WorldMap& isolatedWorldMap()
 	109 {
@@ -475,8 +475,7 @@ This class represent a collection of DOM wrappers for a specific world.
 	162 }
 
 ## ScriptController
-###Class Define
-
+> * Class Define
 	72 class ScriptController {
 	73 public:
 	74     ScriptController(Frame*);
@@ -546,7 +545,7 @@ This class represent a collection of DOM wrappers for a specific world.
 	180 .........................................
 	188 };
 
-###Construct Function
+> * Construct Function
 	90 ScriptController::ScriptController(Frame* frame)
 	91     : m_frame(frame)
 	92     , m_sourceURL(0)
@@ -557,8 +556,9 @@ This class represent a collection of DOM wrappers for a specific world.
 	97 {
 	98 }
 
-###windowShell
-It'll get/create a V8WindowShell for a DOMWrapperWorld.
+> * windowShell
+It'll get or create a V8WindowShell for a DOMWrapperWorld.
+
 	66 V8WindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
 	67 {
 	68     ASSERT(world);
@@ -586,7 +586,7 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	90     return shell;
 	91 }
 
-###updateDocument
+> * updateDocument
 	560 void ScriptController::updateDocument()
 	561 {
 	562     // For an uninitialized main window shell, do not incur the cost of context initialization during FrameLoader::init().
@@ -597,7 +597,7 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	567         windowShell(mainThreadNormalWorld())->updateDocument();
 	568 }
 	
-	###ScriptController::initializeMainWorld
+> * ScriptController::initializeMainWorld
 	242 bool ScriptController::initializeMainWorld()
 	243 {
 	244     if (m_windowShell->isContextInitialized())
@@ -605,7 +605,7 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	246     return windowShell(mainThreadNormalWorld())->isContextInitialized();
 	247 }
 	
-	###ScriptController::clearForClose
+> * ScriptController::clearForClose
 	130 void ScriptController::clearForClose(bool destroyGlobal)
 	131 {
 	132     m_windowShell->clearForClose(destroyGlobal);
@@ -621,8 +621,9 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	142     HistogramSupport::histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
 	143 }
 
-## Frame have ScriptController Object.
-###Frame Class Define
+## Frame have ScriptController Object
+> * Frame Class Define
+
 	70     class Frame : public RefCounted<Frame> {
 	71     public:
 	72         static PassRefPtr<Frame> create(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
@@ -673,7 +674,7 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	199         bool m_inViewSourceMode;
 	200     };
 
-###Frame Construct
+> * Frame Construct
 	100 inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient* frameLoaderClient)
 	101     : m_page(page)
 	102     , m_treeNode(this, parentFromOwnerElement(ownerElement))
@@ -706,9 +707,9 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	129 }
 
 ## Who Call initializeMainWorld
-ScriptController::updateDocument()=>ScriptController::initializeMainWorld()=>ScriptController::windowShell=>V8WindowShell::create/initializeIfNeeded.
+ScriptController::updateDocument()=>ScriptController::initializeMainWorld()=>ScriptController::windowShell=>V8WindowShell::create and initializeIfNeeded.
 
-###DocumentLoader::createWriterFor
+> * DocumentLoader::createWriterFor
 	991 PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const String& mimeType, const String& encoding, bool userChosen, bool dispatch)
 	992 {
 	993     // Create a new document before clearing the frame, because it may need to
@@ -742,7 +743,7 @@ ScriptController::updateDocument()=>ScriptController::initializeMainWorld()=>Scr
 	1021     return DocumentWriter::create(document.get(), mimeType, encoding, userChosen);
 	1022 }
 
-###DOMWindow::setDocument
+> * DOMWindow::setDocument
 	325 void DOMWindow::setDocument(PassRefPtr<Document> document)
 	326 {
 	327     ASSERT(!document || document->frame() == m_frame);
