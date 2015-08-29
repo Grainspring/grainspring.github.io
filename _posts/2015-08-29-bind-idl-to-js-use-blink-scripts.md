@@ -5,10 +5,13 @@ date:   2015-08-29 20:06:05
 categories: Blink Javascript
 excerpt: Blink How To Work Series。
 ---
+* content
+{:toc}
+## 1.global idl file
 
-##1.A global idl file
-[IDL Spec Global] (http://heycam.github.io/webidl/#Global)
-[IDL Spec Exposed] (http://heycam.github.io/webidl/#Exposed)
+[IDL Spec Global](http://heycam.github.io/webidl/#Global) 
+[IDL Spec Exposed](http://heycam.github.io/webidl/#Exposed) 
+
 sampleglobal.idl
 
 	1 [
@@ -22,13 +25,13 @@ sampleglobal.idl
 	18 };
 
 which can be used in javascript as global object.
+
 	var n = name;
 	var s = getSomething();
 
 
-##2.A exposed idl file
-sample sub exposed idl file
-samplesub.idl
+## 2.exposed idl file
+sample sub exposed idl file,samplesub.idl
 
 	1 [
 	3     Exposed=SampleGlobal, // point to sampleglobal.idl
@@ -46,8 +49,10 @@ which can be used in javascript as child/sub object in global object.
 	sub.fun1();
 	SampleSub.fun2;
 
-##3.define c++ interface/impl files
+## 3.c++ interface/impl files
+
 sampleglobal.h
+
 	1 #ifndef SampleGlobal_h
 	2 #define SampleGlobal_h
 	3 
@@ -79,9 +84,11 @@ samplesub.h
 	12 };
 	12 #endif
 	
-##4.make shell
+## 4.make shell
 make a shell to use blink python idl build script to generate V8* file.
+
 [Blink IDL Build Design doc](http://www.chromium.org/developers/design-documents/idl-build)
+
 Reference Blink Source third_party/WebKit/Source/bindings/core/generated.gyp
 
 	1 #!/bin/bash
@@ -152,9 +159,9 @@ use this run.gen.sh,it'll generate V8SampleGlobal.h/V8SampleGlobal.cpp/V8SampleS
 	44 
 	45 ${PWD}/gen.sh ${GEN_PATH} ${GEN_SOURCE_PATH}
 
-##4.use generated files
+## 5.use generated files
+
 under v8 isolate/context expose global/sub interface for javascript.
-main.cpp
 
 	1 v8::Local<v8::Object> initModule() {
 	2     Isolate* isolate = Isolate::GetCurrent();
@@ -170,6 +177,6 @@ main.cpp
 	12 }
 	13 v8::Persistent<v8::Object> global = initModule();
 
-##5.annoucement
+## 6.annoucement
 This is sample mode to describe how to use blink bind script to generate file use idl, and expose them to javascript.
 
