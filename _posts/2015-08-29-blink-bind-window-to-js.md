@@ -369,7 +369,7 @@ We should provide a frame and world and isolate to construct it.
 	88 }
 	90 #undef V8_STORE_PRIMORDIAL
 
-###V8PreContextData::dispose
+###dispose
 	49 void V8PerContextData::dispose()
 	50 {
 	51     v8::HandleScope handleScope(m_isolate);
@@ -701,8 +701,9 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	128 #endif
 	129 }
 
-## What time call ScriptController's initializeMainWorld?
-ScriptController::updateDocument() =>ScriptController::initializeMainWorld()=>ScriptController::windowShell=>V8WindowShell::create/initializeIfNeeded
+## Who Call initializeMainWorld
+->ScriptController::updateDocument()=>ScriptController::initializeMainWorld()=>ScriptController::windowShell=>V8WindowShell::create/initializeIfNeeded
+
 ###DocumentLoader::createWriterFor
 	991 PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const String& mimeType, const String& encoding, bool userChosen, bool dispatch)
 	992 {
