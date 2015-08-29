@@ -2,7 +2,7 @@
 layout: post
 title:  "Blink/WebKit Bind C++ Window To Javascript"
 date:   2015-08-29 16:06:05
-categories: Blink, Javascript
+categories: Blink Javascript
 excerpt: Blink How To Work Series。
 ---
 
@@ -13,32 +13,32 @@ excerpt: Blink How To Work Series。
 V8WindowShell represents all the per-global object state for a Frame that persist between navigations.
 
 ###V8WindowShell Class
- 55 class V8WindowShell {
- 56 public:
- 57     static PassOwnPtr<V8WindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
- 59     v8::Local<v8::Context> context() const { return m_context.newLocal(m_isolate); }
- 61     // Update document object of the frame.
- 62     void updateDocument();
- 80     DOMWrapperWorld* world() { return m_world.get(); }
- 82 private:
- 83     V8WindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
- 85     void disposeContext();
- 95
- 96     void createContext();
- 97     bool installDOMWindow();
- 98
- 99     static V8WindowShell* enteredIsolatedWorldContext();
-100
-101     Frame* m_frame;
-102     RefPtr<DOMWrapperWorld> m_world;
-103     v8::Isolate* m_isolate;
-104
-105     OwnPtr<V8PerContextData> m_perContextData;
-106
-107     ScopedPersistent<v8::Context> m_context; // pay attention here ScopedPersistent for m_context.
-108     ScopedPersistent<v8::Object> m_global; // also to m_global.
-109     ScopedPersistent<v8::Object> m_document; // also to m_document.
-110 };
+	55 class V8WindowShell {
+	56 public:
+	57     static PassOwnPtr<V8WindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+	59     v8::Local<v8::Context> context() const { return m_context.newLocal(m_isolate); }
+	61     // Update document object of the frame.
+	62     void updateDocument();
+	80     DOMWrapperWorld* world() { return m_world.get(); }
+	82 private:
+	83     V8WindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+	85     void disposeContext();
+	95
+	96     void createContext();
+	97     bool installDOMWindow();
+	98
+	99     static V8WindowShell* enteredIsolatedWorldContext();
+	100
+	101     Frame* m_frame;
+	102     RefPtr<DOMWrapperWorld> m_world;
+	103     v8::Isolate* m_isolate;
+	104
+	105     OwnPtr<V8PerContextData> m_perContextData;
+	106
+	107     ScopedPersistent<v8::Context> m_context; // pay attention here ScopedPersistent for m_context.
+	108     ScopedPersistent<v8::Object> m_global; // also to m_global.
+	109     ScopedPersistent<v8::Object> m_document; // also to m_document.
+	110 };
 
 ###V8WindowShell Construct
  We should provide a frame and world and isolate to construct it.
