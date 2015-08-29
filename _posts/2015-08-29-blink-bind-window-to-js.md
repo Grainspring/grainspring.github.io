@@ -475,7 +475,9 @@ This class represent a collection of DOM wrappers for a specific world.
 	162 }
 
 ## ScriptController
+
 ### Class Define
+
 	72 class ScriptController {
 	73 public:
 	74     ScriptController(Frame*);
@@ -484,9 +486,6 @@ This class represent a collection of DOM wrappers for a specific world.
 	77     bool initializeMainWorld();
 	78     V8WindowShell* windowShell(DOMWrapperWorld*);
 	79     V8WindowShell* existingWindowShell(DOMWrapperWorld*);
-	81     ScriptValue executeScript(const ScriptSourceCode&);
-	82     ScriptValue executeScript(const String& script, bool forceUserGesture = false);
-	83
 	84     // Evaluate JavaScript in the main world.
 	85     ScriptValue executeScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
 	86
@@ -622,6 +621,7 @@ It'll get or create a V8WindowShell for a DOMWrapperWorld.
 	143 }
 
 ## Frame have ScriptController Object
+
 ### Frame Class Define
 
 	70     class Frame : public RefCounted<Frame> {
@@ -672,7 +672,7 @@ It'll get or create a V8WindowShell for a DOMWrapperWorld.
 	197 #endif
 	198
 	199         bool m_inViewSourceMode;
-	200     };
+	200 };
 
 ### Frame Construct
 	100 inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient* frameLoaderClient)
