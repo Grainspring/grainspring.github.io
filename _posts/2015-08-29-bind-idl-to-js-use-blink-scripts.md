@@ -7,10 +7,12 @@ excerpt: Blink How To Work Series。
 ---
 * content
 {:toc}
+
+
 ## 1.global idl file
 
-[IDL Spec Global](http://heycam.github.io/webidl/#Global) 
-[IDL Spec Exposed](http://heycam.github.io/webidl/#Exposed) 
+[[IDL Spec Global]](http://heycam.github.io/webidl/#Global) 
+[[IDL Spec Exposed]](http://heycam.github.io/webidl/#Exposed) 
 
 sampleglobal.idl
 
@@ -87,7 +89,7 @@ samplesub.h
 ## 4.make shell
 make a shell to use blink python idl build script to generate V8* file.
 
-[Blink IDL Build Design doc](http://www.chromium.org/developers/design-documents/idl-build)
+[[Blink IDL Build Design doc]](http://www.chromium.org/developers/design-documents/idl-build)
 
 Reference Blink Source third_party/WebKit/Source/bindings/core/generated.gyp
 
@@ -150,8 +152,10 @@ Reference Blink Source third_party/WebKit/Source/bindings/core/generated.gyp
 	72 done 
 	89 rm -f $outdir/__jinja2_*.cache
 
+use this run.gen.sh,it'll generate V8SampleGlobal.h/V8SampleGlobal.cpp/V8SampleSub.h/V8SampeSub.cpp to
+describe its definition of v8 interfaces use SampelGlobal/SampleSub c++ interface.
+
 run.gen.sh
-use this run.gen.sh,it'll generate V8SampleGlobal.h/V8SampleGlobal.cpp/V8SampleSub.h/V8SampeSub.cpp to describe its definition of v8 interfaces use SampelGlobal/SampleSub c++ interface.
 
 	#!/bin/bash
 	42 GEN_PATH = ${PWD}/gen
