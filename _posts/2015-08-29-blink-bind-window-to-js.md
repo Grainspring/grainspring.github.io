@@ -42,6 +42,7 @@ V8WindowShell represents all the per-global object state for a Frame that persis
 
 ###Construct Function
 We should provide a frame and world and isolate to construct it.
+
 	81 PassOwnPtr<V8WindowShell> V8WindowShell::create(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
 	82 {
 	83     return adoptPtr(new V8WindowShell(frame, world, isolate));
@@ -285,7 +286,8 @@ We should provide a frame and world and isolate to construct it.
 	109     V8GCForContextDispose::instance().notifyContextDisposed(isMainFrame);
 	110 }
 
-## V8PerContextData
+##V8PerContextData
+
 ###Class Define
 	61 class V8PerContextData {
 	62 public:
@@ -385,6 +387,7 @@ We should provide a frame and world and isolate to construct it.
 ## DOMWrapperWorld
 ###Class Define
 This class represent a collection of DOM wrappers for a specific world.
+
 	49 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 	50 public:
 	51     static const int mainWorldId = 0;
@@ -403,7 +406,7 @@ This class represent a collection of DOM wrappers for a specific world.
 	64         ASSERT(contextHasCorrectPrototype(context));
 	65         return static_cast<DOMWrapperWorld*>(context->GetAlignedPointerFromEmbedderData(v8ContextIsolatedWorld));
 	66     }
-	........................................
+	67  ........................................
 	108 private:
 	109     static int isolatedWorldCount;
 	110     static PassRefPtr<DOMWrapperWorld> createMainWorld();
@@ -473,6 +476,7 @@ This class represent a collection of DOM wrappers for a specific world.
 
 ## ScriptController
 ###Class Define
+
 	72 class ScriptController {
 	73 public:
 	74     ScriptController(Frame*);
@@ -702,7 +706,7 @@ It'll get/create a V8WindowShell for a DOMWrapperWorld.
 	129 }
 
 ## Who Call initializeMainWorld
-->ScriptController::updateDocument()=>ScriptController::initializeMainWorld()=>ScriptController::windowShell=>V8WindowShell::create/initializeIfNeeded
+ScriptController::updateDocument()=>ScriptController::initializeMainWorld()=>ScriptController::windowShell=>V8WindowShell::create/initializeIfNeeded.
 
 ###DocumentLoader::createWriterFor
 	991 PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const String& mimeType, const String& encoding, bool userChosen, bool dispatch)
