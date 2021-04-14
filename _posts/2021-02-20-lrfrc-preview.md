@@ -1,9 +1,9 @@
 ---
 layout: post
-title:"Learn Rust From Rustc(LRFRC)系列前言"
-date:2021-02-20 18:06:05
-categories: Rust LRFRC
-excerpt: 学习Rust,Rust学习
+title:   "Learn Rust From Rustc(LRFRC)系列前言"
+date:  2021-02-20 18:06:05
+categories:  Rust LRFRC
+excerpt:  学习Rust,Rust学习
 ---
 
 * content

@@ -53,6 +53,7 @@ fn main ( ) { println ! ( "hello lrfrc" ) ; }
 ```
 ---
 * 文字量
+
 对没接触过编译器知识的同学来讲，对其中文字量的概念认知可能有一定难度，
 
 其实可以简单的理解为：
@@ -63,13 +64,17 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 
 如果代码中要包含带中文的文字量，rustc支持以utf8编码格式对应的Unicode编码值；
 
-文字量的识别过程可参考:https://en.wikipedia.org/wiki/String_interning
+文字量的识别过程可参考:[String interning](https://en.wikipedia.org/wiki/String_interning)
+
 ---
 * 标识符Identifier
+
 标识符是一组非空的符合一定规则的ASCII字符序列，其具体含义由后面的分析来决定，
 比如：fn main println 分词后是一个个不同的标识符，其含义待明确；
+
 ---
 * 具体实现
+
 参考rustc_lexer;
 
 ---
@@ -77,6 +82,7 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 进一步分析TokenStream，根据Rust语言定义的语法BNF<Backus Normal Form>，来生成AST<Abstract Syntax Tree>；
 
 * 语法BNF
+
 有了一系列Token流之后，这些Token组合在一起如何才能表达出的一定的含义呢？
 就像中文汉语及拼音一样，要形成一门语言，必须会有一组规则来定义如何组合最基础的元素来表达一个汉字或拼音；
 
@@ -84,19 +90,25 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 
 比如：汉语中的'江'字由'三点水'及'工'组成，它包含的'三点水'与'汉'子中包含的'三点水'是一样的，'三点水'有自身的定义，它可复用到其他地方，组成更多的语法；
 
+
 为了高效的定义语言的规则，计算机及语言学家发明了编写语言语法的BNF<Backus Normal Form>，它是一组通用的范式或原则，用来规范如何表达语言的语法，让针对不同的语言编写的语法有共通的描述方式，以便人们的理解与沟通；
+
 ---
 * Rust BNF格式语法
+
 Rust作为一门语言，按照BNF规则定义了一组语法，以便开发者可理解和编写Rust程序；
 具体语法可参考：
-https://doc.rust-lang.org/stable/reference/items/modules.html
+[rust modules](https://doc.rust-lang.org/stable/reference/items/modules.html)
 
-这些语法是由Rust语言设计开发人员定义的，其中往往使用语言的保留关键字比如:fn、impl等等来区别如何组合这些Token流，
+这些语法是由Rust语言设计开发人员定义的，其中往往使用语言的保留关键字比如:fn、impl等等来区别如何组合这些Token流;
+
 ---
 * 抽象语法树AST
 由不同的Token组合组成一个节点Node，其中会存在包含其他节点Node的层级关系，所以称为抽象语法树，树根为rs代码文件对应的crate/mod；
+
 ---
 * 语法树示例
+
 根据语法规则，自动添加根节点module及items节点
 ```
 // 示例lrfrc.rs，初步语法处理后，生成语法树如下：
@@ -296,7 +308,7 @@ MIR(Mid-Level Intermediate Representation)是一种从根本上来对Rust语言�
 
 它会将函数中语句及表达逻辑，转换成控制流图CFG(Control-Flow Graph)的方式，以描述函数中的程序块以及它们之间的跳转，同时维护变量的初始化及生命周期。
 
-具体可参考https://blog.rust-lang.org/2016/04/19/MIR.html
+具体可参考:[Introduce MIR](https://blog.rust-lang.org/2016/04/19/MIR.html)
 ```
 // 示例lrfrc.rs，生成的MIR内容如下：
 fn main() -> () {
@@ -433,6 +445,7 @@ Rust语言作为一门内存安全的语言，rustc编译器中除了定义实�
 另外编译器作为Rust语言核心的实现者，除了实现基础功能还重点在如下方面进行加强：
 ###### A.编译速度
 采用增量编译，并行编译等方式来提升编译速度；
+
 ---
 ###### B.编译器内存、稳定性、实现复杂度
 作为一门比较复杂的系统语言，针对编译器本身的内存使用、稳定性策略、实现逻辑优化等等，
@@ -489,9 +502,10 @@ rustc_data_structures:用描述rustc使用到的基础数据结构；
 
 ---
 ##### 3.初识rustc编译主流程
-参考rust1.47相关代码如下
-A.rusct_main
+参考rust1.47相关代码如下:
+
 ```
+rusct main入口
 //src/rustc/rustc.rs
 fn main() {
     // Pull in jemalloc when enabled.
@@ -851,7 +865,7 @@ std::rt::lang_start::{{closure}}#0 0:fn()] as std::ops::FnOnce<()>>::call_once -
 
 ---
 参考
-*[rustc dev guide](https://rustc-dev-guide.rust-lang.org/overview.html)
+* [rustc dev guide](https://rustc-dev-guide.rust-lang.org/overview.html)
 
 ---
 更多文章可使用微信扫码公众二维码查看
