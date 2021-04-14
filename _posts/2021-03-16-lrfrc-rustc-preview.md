@@ -64,7 +64,7 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 
 如果代码中要包含带中文的文字量，rustc支持以utf8编码格式对应的Unicode编码值；
 
-文字量的识别过程可参考:<font color="blue">[String interning](https://en.wikipedia.org/wiki/String_interning)</font>
+文字量的识别过程可参考:[<font color="blue">String interning</font>](https://en.wikipedia.org/wiki/String_interning)
 
 ---
 * 标识符Identifier
@@ -98,7 +98,7 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 
 Rust作为一门语言，按照BNF规则定义了一组语法，以便开发者可理解和编写Rust程序；
 具体语法可参考：
-<font color="blue">[rust modules](https://doc.rust-lang.org/stable/reference/items/modules.html)</font>
+[<font color="blue">rust modules</font>](https://doc.rust-lang.org/stable/reference/items/modules.html)
 
 这些语法是由Rust语言设计开发人员定义的，其中往往使用语言的保留关键字比如:fn、impl等等来区别如何组合这些Token流;
 
@@ -309,7 +309,7 @@ MIR(Mid-Level Intermediate Representation)是一种从根本上来对Rust语言�
 
 它会将函数中语句及表达逻辑，转换成控制流图CFG(Control-Flow Graph)的方式，以描述函数中的程序块以及它们之间的跳转，同时维护变量的初始化及生命周期。
 
-具体可参考:<font color="blue">[Introduce MIR](https://blog.rust-lang.org/2016/04/19/MIR.html)</font>
+具体可参考:[<font color="blue">Introduce MIR</font>](https://blog.rust-lang.org/2016/04/19/MIR.html)
 ```
 // 示例lrfrc.rs，生成的MIR内容如下：
 fn main() -> () {
@@ -866,7 +866,7 @@ std::rt::lang_start::{{closure}}#0 0:fn()] as std::ops::FnOnce<()>>::call_once -
 
 ---
 参考
-* <font color="blue">[rustc dev guide](https://rustc-dev-guide.rust-lang.org/overview.html)</font>
+* [<font color="blue">rustc dev guide</font>](https://rustc-dev-guide.rust-lang.org/overview.html)
 
 ---
 更多文章可使用微信扫码公众二维码查看
