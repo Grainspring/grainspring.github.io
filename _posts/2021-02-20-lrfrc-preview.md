@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Learn Rust From Rustc(LRFRC)系列前言"
-date:   2021-02-08 14:06:05
+date:   2021-02-20 18:06:05
 categories: Rust LRFRC
 excerpt: 学习Rust,Rust学习。
 ---
@@ -58,5 +58,7 @@ Rust作为一门新的系统语言，具有高性能、内存安全可靠、高�
 万事开头难，但愿能通过完成Learn Rust From Rustc(LRFRC)系列文章可更好的学习、理解、使用Rust语言/编译器rustc，为有需要的同学提供另一种学习的思路和视角。。。
 
 更多文章可使用微信扫码公众二维码查看
+
+
 ![qrcode.2121labs.](/imgs/qrcode_for_gh_07bc06f8b91d_430.jpg "qrcode.2121labs")
 
