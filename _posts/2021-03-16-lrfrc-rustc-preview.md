@@ -37,6 +37,7 @@ $ ./lrfrc
 hello lrfrc
 ```
 
+---
 ##### 2.rustc如何编译一个rs代码文件
 ###### A.获取参数及读取其中指定的rs代码文件
 为支持各种语言的文字及相关文字量，rustc默认认为rs代码为utf8格式编码的文本文件；
@@ -50,7 +51,7 @@ rustc按字节流的方式读取代码文件，并对这些字节进行分析，
 // 示例lrfrc.rs变成如下Token流
 fn main ( ) { println ! ( "hello lrfrc" ) ; }
 ```
-
+---
 * 文字量
 对没接触过编译器知识的同学来讲，对其中文字量的概念认知可能有一定难度，
 
@@ -63,14 +64,15 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 如果代码中要包含带中文的文字量，rustc支持以utf8编码格式对应的Unicode编码值；
 
 文字量的识别过程可参考:https://en.wikipedia.org/wiki/String_interning
-
+---
 * 标识符Identifier
 标识符是一组非空的符合一定规则的ASCII字符序列，其具体含义由后面的分析来决定，
 比如：fn main println 分词后是一个个不同的标识符，其含义待明确；
-
+---
 * 具体实现
 参考rustc_lexer;
 
+---
 ###### C.分析TokenStream生成基础AST
 进一步分析TokenStream，根据Rust语言定义的语法BNF<Backus Normal Form>，来生成AST<Abstract Syntax Tree>；
 
@@ -83,17 +85,17 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 比如：汉语中的'江'字由'三点水'及'工'组成，它包含的'三点水'与'汉'子中包含的'三点水'是一样的，'三点水'有自身的定义，它可复用到其他地方，组成更多的语法；
 
 为了高效的定义语言的规则，计算机及语言学家发明了编写语言语法的BNF<Backus Normal Form>，它是一组通用的范式或原则，用来规范如何表达语言的语法，让针对不同的语言编写的语法有共通的描述方式，以便人们的理解与沟通；
-
+---
 * Rust BNF格式语法
 Rust作为一门语言，按照BNF规则定义了一组语法，以便开发者可理解和编写Rust程序；
 具体语法可参考：
 https://doc.rust-lang.org/stable/reference/items/modules.html
 
 这些语法是由Rust语言设计开发人员定义的，其中往往使用语言的保留关键字比如:fn、impl等等来区别如何组合这些Token流，
-
+---
 * 抽象语法树AST
 由不同的Token组合组成一个节点Node，其中会存在包含其他节点Node的层级关系，所以称为抽象语法树，树根为rs代码文件对应的crate/mod；
-
+---
 * 语法树示例
 根据语法规则，自动添加根节点module及items节点
 ```
@@ -152,6 +154,7 @@ https://doc.rust-lang.org/stable/reference/items/modules.html
 }
 ```
 
+---
 ###### D.执行宏调用展开基础AST生成完整AST
 在前一阶段基础AST树之后，然后检查其中是否有宏调用，如果有则进行宏调用，通过展开宏修改原来AST生成完整的AST语法树；
 期间会自动添加一些内置的缺省的逻辑比如：preclude_import，示例如下：
@@ -243,11 +246,13 @@ fn main() {
 }
 ```
 
+---
 ###### E.将AST转换成高级中间描述HIR
 由于AST树描述的内容基于源代码的初步分析转换而来，还有些语言相关的转换比如loop、async/await等内容没有处理；
 
 在这个将AST转换成HIR(High-Level Intermediate Representation)过程中，则会对相关内容进行处理比如搜索解析标识符的含义、对loop和async/await等去糖desugar，并为下一步的优化分析作准备；
 
+---
 ###### F.对HIR进行类型推导/类型检查typeck及类型具体化
 类型推导是指对HIR中部分类型未指定的逻辑，根据HIR树节点之间的关系进行类型推导从而确定其具体类型，
 
@@ -283,6 +288,7 @@ fn main() ({
 )
 ```
 
+---
 ###### G.将HIR转换成中间描述MIR并进行借用检查
 MIR(Mid-Level Intermediate Representation)是一种从根本上来对Rust语言进行了简化的中间描述性语言，
 
@@ -365,7 +371,7 @@ promoted[1] in main: &[&str; 1] = {
     }
 }
 ```
-
+---
 ###### H.将借用检查后的MIR转换成LLVM IR
 对MIR中含有泛化参数的函数进行monomorphized处理，即根据具体参数类型的不同，复制相关代码生成不同的函数；
 然后依据MIR内容及LLVM IR规范对相关逻辑进行转换；
@@ -407,10 +413,11 @@ bb2:
   ret void
 }
 ```
-
+---
 ###### I.将LLVM IR生成二进制库或可执行程序
 使用LLVM库来转换LLVM IR生成对应的二进制库或可执行程序，其中主要逻辑包括将LLVM IR生成汇编代码，然后进行编译链接生成二进制代码；
 
+---
 ##### 3.中间描述及其分析检查
 根据上面的流程，我们知道rustc在编译Rust源代码过程中会使用多种中间描述，每一种描述有自身的定义和用途；
 这些中间描述包括TokenStream、AST、HIR、THIR、MIR、LLVMIR，它们具体内容及相互转换的规则，后续再具体介绍；
@@ -418,6 +425,7 @@ bb2:
 Rust语言作为一门内存安全的语言，rustc编译器中除了定义实现了各种中间描述，还有包括各种typecheck、优化器和borrowcheck；
 其中borrowcheck包括lifetime推导检查，是Rust语言能通过静态检查实现内存安全的核心，待后续深入研究；
 
+---
 #### 二、编译器rustc是如何实现的？
 ##### 1.用Rust语言开发、使用模块化的工程管理方式来实现
 作为一个Rust编写的程序，按照传统Rust语言项目来管理开发，由Cargo来管理各个模块的依赖和编译，具体编译可参考以前的文章<LRFRC系列:编译rustc及使用rustc>；
@@ -425,7 +433,7 @@ Rust语言作为一门内存安全的语言，rustc编译器中除了定义实�
 另外编译器作为Rust语言核心的实现者，除了实现基础功能还重点在如下方面进行加强：
 ###### A.编译速度
 采用增量编译，并行编译等方式来提升编译速度；
-
+---
 ###### B.编译器内存、稳定性、实现复杂度
 作为一门比较复杂的系统语言，针对编译器本身的内存使用、稳定性策略、实现逻辑优化等等，
 rustc进行了针对性的实现和优化；
@@ -434,14 +442,17 @@ rustc进行了针对性的实现和优化；
 
 用查询Query中间描述状态的方式来实现查询、缓存更新、优化中间描述，以达到最优代码输出；
 
+---
 ###### C.生成的Rust程序运行时内存/性能最优
 作为一门语言是否可靠并值得信赖，以支持开发者使用该语言来编写代码，其中生成的程序运行时的内存及性能等方面至关重要，
 rustc编译器在这方面进行了重点优化及支持；
 
+---
 ###### D.模块化输出及整合其他工具
 编译器作为一个工具，主要功能在于编译源代码，对Rust语言生态来讲，还有其他工具比如:包管理工具Cargo、检查分析工具lint/clippy、IDE支持RLS等，
 rustc以crate模块及plugin方式来输出或接入其他工具模块，以便与其他工具共享复用部分代码逻辑；
 
+---
 ##### 2.rustc主要模块
 rustc核心主要模块及相互依赖如下：
 
@@ -476,6 +487,7 @@ rustc_llvm:用来实现对llvm的ffi及封装调用；
 rustc_arena：用来实现共享中间描述对象的平台；
 rustc_data_structures:用描述rustc使用到的基础数据结构；
 
+---
 ##### 3.初识rustc编译主流程
 参考rust1.47相关代码如下
 A.rusct_main
@@ -758,6 +770,7 @@ fn analysis(tcx: TyCtxt<'_>, cnum: CrateNum) -> Result<()> {
 }
 ```
 
+---
 ##### 4.试验了解rustc主流程
 ###### A.一次rustc编译主流程日志分析
 ```
@@ -830,14 +843,17 @@ std::rt::lang_start::{{closure}}#0 0:fn()] as std::ops::FnOnce<()>>::call_once -
 14:43:57.598171Z  rustc_codegen_ssa::back::link: linker stdout:
 ```
 
+---
 #### 三、其他
 通过对编译器rustc进行初步的解读与试验，期待能让大家对编译器rustc编译Rust源代码的整体过程有个初步的了解，
 
 对于每一个步骤更具体的内容比如TokenStream、AST、HIR、MIR等，随着对rustc代码更深入的边解读和边理解，期待以后的解读能有更清晰的认知；
 
+---
 参考
 *[rustc dev guide](https://rustc-dev-guide.rust-lang.org/overview.html)
 
+---
 更多文章可使用微信扫码公众二维码查看
 
 

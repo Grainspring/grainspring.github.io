@@ -18,6 +18,7 @@ learn rust from rustc(LRFRC)系列文章尝试从另外一个角度来学习Rust
 
 为了更好的使用rustc，下面介绍linux环境下如何编译rustc，如何查看rustc相关log及调试rustc，最后了解其编译过程。
 
+---
 #### 一、编译rustc
 ##### 1.准备编译环境
 <下面介绍ubuntu16.04相关，rustc本身也支持win/mac>
@@ -27,12 +28,14 @@ $ sudo apt-get install python3 curl git libssl-dev pkg-config g++ make cmake
 其中要求g++ 5.1及以上版本，make 3.81及以上版本，cmake 3.4.3版本
 ```
 
+---
 ###### B.硬件及网络环境要求
 剩余空间>=15G，最好25GB以上.
 内存>=8GB
 Cpu核心>=4
 联网
 
+---
 ##### 2.获取源代码及配置
 ```
 $ git clone https://github.com/rust-lang/rust.git
@@ -65,11 +68,13 @@ $ cp config.toml.example config.toml
 +debuginfo-level = 2
 ```
 
+---
 ##### 3.执行编译
 ```
 $ ./x.py build -j4 && ./x.py install -j4
 ```
 
+---
 ##### 4.查看编译结果
 在网络正常情况下，大约需要2-3小时，可编译并安装完成rustc及相关工具，编译结果如下：
 ```
@@ -123,6 +128,7 @@ libunicode_width-cd3bd95206c2ab73.rlib
 libunwind-053ceca8905924e3.rlib
 ```
 
+---
 ##### 5.运行验证编译结果
 将prefix路径/home/working/rust.1.50.my/bin加到bash的PATH环境变量中
 运行
@@ -138,12 +144,14 @@ release: 1.48.0-dev
 LLVM version: 11.0
 ```
 
+---
 ##### 6.编译支持其他目标平台wasm32
 rustc代码库支持同一套代码编程生成的rustc可用来编译输出不同目标代码
 ```
 $ cd rust
 $ cp config.toml.example config.toml
 ```
+---
 ###### A.针对wasm32编译目标
 修改config.toml如下
 ```
@@ -171,12 +179,13 @@ $ cp config.toml.example config.toml
 -#debuginfo-level = 0
 +debuginfo-level = 2
 ```
-
+---
 ###### B.执行编译
 ```
 $ ./x.py build -j4 && ./x.py install -j4
 ```
 
+---
 ###### C.查看编译结果
 ```
 $ cd /home/working/rust.1.48.my/
@@ -187,6 +196,7 @@ libproc_macro-1141e85c3414e735.rlib
 其他rlib
 ```
 
+---
 ##### 7.验证使用同一rustc编译生成不同目标代码
 ```
 $ vim lrfrc.rs
@@ -202,11 +212,13 @@ $ rustc --target wasm32-unknown-unknown lrfrc.rs
 #lrfrc.wasm可通过其他wasm-gc/wasm2wat工具生成WAT格式，或使用wasm-bindgen生成lrfrc.js在js环境使用。
 ```
 
+---
 ##### 8.rustc支持不同目标平台
   相对gcc来讲，rustc对不同目标平台的支持比较方便，在相同Host环境下比如x86_64使用统一的rustc程序，只需加上不同--target参数就可以生成不同目标平台代码，
 
 而对gcc来讲，在相同Host环境x86_64下，要编译输出目标为x86_64和arm的代码，需要使用不同的gcc程序比如gcc和arm_gnu_gcc，指定的gcc只能输出对应目标的代码，而rustc只需要一个这样的rustc，这样rustc更有利于对跨平台的编译器及其依赖库的维护；
 
+---
 #### 二、使用rustc
 ##### 1.打印rustc编译log
 ```
@@ -216,6 +228,7 @@ $ RUSTC_LOG=debug rustc lrfrc.rs
 $ RUSTC_LOG=rustc_mir_build=debug rustc lrfrc.rs
 ```
 
+---
 ##### 2.使用其他选项
 ```
 #输出未进行宏扩展的ast树
@@ -240,12 +253,13 @@ $ size -A lrfrc.o
 $ objdump -d lrfrc.o
 ```
 
+---
 ##### 3.其他
 配置vim支持rust语言，可方便跳转提示关联阅读rustc代码；
 使用gdb调试rustc；
 使用https://play.rust-lang.org/在线编写、编译、分析rust代码；
 
-
+---
 #### 三、rustc编译过程
 ##### 1.编译器自举编译
      根据前面<LRFRC前言>中的说明，rustc编译器本身已完成编译自举，其主要逻辑如下：
@@ -274,11 +288,13 @@ stage3:可选的，用于sanity检查，使用stage2输出的rustc和std来编�
 
      这样stage2输出的rustc和std，可作为最终的分发版本提供给开发者使用，开发者通过rustup相关工具安装的rustc和std也是stage2输出的版本；
 
+---
 ##### 2.stage0自举编译
      新的rustc及std代码可能新增或稳定一个feature，而老的beta编译器甚至不支持这个feature，对同一份新的rustc和std代码，为了区分是否不同stage的编译，rustc代码中引入--cfg bootstrap、cfg(not(bootstrap))或RUSTC_BOOTSTRAP=1来区分不同stage的编译过程及对应的编译器；
 
      为了方便不同stage的编译及环境变量/配置参数的设置，rustc中内建一个bootstrap程序，它由x.py在下载成功beta rustc编译后，编译src/bootstrap/bin/main.rs生成，然后x.py将编译不同stage的过程统一交给bootstrap程序来实现，其中包括设置影响环境变量/sysroot后调用cargo来编译rustc/std，同时维护不同stage文件和编译状态推进；
 
+---
 ##### 3.不同stage编译流程及输出
 
 ![lrfrc.compilerustc.3](/imgs/lrfrc.2.compilerustc.3.png "lrfrc.compilerustc.3")
@@ -289,6 +305,7 @@ stage3:可选的，用于sanity检查，使用stage2输出的rustc和std来编�
 
     其中需要注意的是：不同stage N对应的std，由stage N使用的编译器编译出来，并会链接到由stage N对应编译器编译出来的那个编译器，并通过stageN-sysroot目录来存放stage N新生成的库和二进制；
 
+---
 ##### 4.sysroot路径
 sysroot用来描述编译器依赖的路径，
 其子目录lib中包含LLVM、librustc_driver、librustc_macros、libstd、libtest相关库，其代表编译器运行时依赖库，
@@ -299,6 +316,7 @@ $ rustc --print sysroot
 /home/working/rust.1.48.my
 ```
 
+---
 参考
 * [how to rustc build and run](https://rustc-dev-guide.rust-lang.org/building/how-to-build-and-run.html)
 * [rustc debugging](https://rustc-dev-guide.rust-lang.org/compiler-debugging.html)
