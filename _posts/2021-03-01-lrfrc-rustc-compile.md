@@ -271,11 +271,11 @@ $ objdump -d lrfrc.o
 
   而在git代码库中有可能同时修改std标准库逻辑和编译器逻辑，这样让编译出一个完整的全新的编译器<包括对应std标准库>变得比较复杂，其编译过程被定义成不同阶段；
 
-<font color="red">stage0</font>:从网上下载一个老的beta编译器及其对应std库/cargo等，用beta rustc和std来编译当前代码库，输出当前代码库对应std和rustc<用新生成的std来链接>；
+<font color="red">stage0:</font>从网上下载一个老的beta编译器及其对应std库/cargo等，用beta rustc和std来编译当前代码库，输出当前代码库对应std和rustc<用新生成的std来链接>；
 
 ![lrfrc.compilerustc.0](/imgs/lrfrc.2.compilerustc.0.png "lrfrc.compilerustc.0")
 
-<font color=#FF0000>stage1</font>:利用stage0输出的rustc和std来编译当前代码库，输出当前代码库对应std和rustc<用新生成的std来链接>；
+<font color="read">stage1:</font>利用stage0输出的rustc和std来编译当前代码库，输出当前代码库对应std和rustc<用新生成的std来链接>；
 
 ![lrfrc.compilerustc.1](/imgs/lrfrc.2.compilerustc.1.png "lrfrc.compilerustc.1")
 
@@ -288,9 +288,9 @@ $ objdump -d lrfrc.o
 
 ![lrfrc.compilerustc.2](/imgs/lrfrc.2.compilerustc.2.png "lrfrc.compilerustc.2")
 
-<font color="red">stage2</font>:复制输出stage1输出的rustc和std，针对Host/Target不一致时需要重新生成对应std；
+<font color="red">stage2:</font>复制输出stage1输出的rustc和std，针对Host/Target不一致时需要重新生成对应std；
 
-<font color="red">stage3</font>:可选的，用于sanity检查，使用stage2输出的rustc和std来编译当前代码库，生成的rustc和std应该跟stage2输出的完全一样；
+<font color="red">stage3:</font>可选的，用于sanity检查，使用stage2输出的rustc和std来编译当前代码库，生成的rustc和std应该跟stage2输出的完全一样；
 
   链接到rustc的std库和使用该rustc来编译开发人员开发的rust代码时所用的std库可能是不一样的；
 

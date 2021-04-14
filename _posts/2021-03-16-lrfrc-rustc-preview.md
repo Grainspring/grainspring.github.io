@@ -477,36 +477,54 @@ rustc核心主要模块及相互依赖如下：
 ![rust5.](/imgs/rustc.depgraph.1.png "rust5")
 
 rustc_main:编译器rustc主入口；
+
 rustc_driver:用来描述驱动编译器编译的可供外部调用的抽象接口；
+
 rustc_interface:用来描述编译基础接口及实现；
+
 rustc_session:用来描述一个编译会话以及支持并行多会话编译；
+
 ---
 rustc_lexer:用来Rust语言词法分析及TokenStream生成；
+
 rustc_parse:用来生成AST语法树；
+
 rustc_expand:用来进行宏扩展相关的实现，包括对过程宏及内嵌宏的实现等；
+
 rustc_attr:用来对属性相关实现；
 
 ---
 rustc_resolve:用来实现对标识的识别和解析等；
+
 rustc_ast:用来描述各种AST语言树节点定义及Vistor等；
+
 rustc_typeck:用来类型检查及转换等逻辑；
+
 rustc_ast_lowering:用来将AST转换成HIR；
 
 ---
 rustc_hir:用来描述HIR数据结构及相关实现；
+
 rustc_infer:用来类型及语义推导相关实现；
+
 rustc_traits：用来实现trait相关逻辑实现；
+
 rustc_ty/rustc_middle:用来描述中间描述及ty相关实现；
 
 ---
 rustc_mir:用来描述MIR数据结构及相关实现；
+
 rustc_mir_build:用来实现从HIR转换成MIR逻辑；
+
 rustc_codegen_ssa:用来实现MIR的通用逻辑；
+
 rustc_codegen_llvm:用来实现与llvm ir规范相关的LLVM IR转换；
 
 ---
-rustc_llvm:用来实现对llvm的ffi及封装调用； 
+rustc_llvm:用来实现对llvm的ffi及封装调用；
+
 rustc_arena：用来实现共享中间描述对象的平台；
+
 rustc_data_structures:用描述rustc使用到的基础数据结构；
 
 ---
