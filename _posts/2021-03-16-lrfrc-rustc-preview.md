@@ -42,6 +42,7 @@ hello lrfrc
 ###### A.获取参数及读取其中指定的rs代码文件
 为支持各种语言的文字及相关文字量，rustc默认认为rs代码为utf8格式编码的文本文件；
 
+---
 ###### B.对源文件内容进行分词生成TokenStream
 rustc按字节流的方式读取代码文件，并对这些字节进行分析，判断其是否空格、注释、运算符比如"+"、"-"、"*"、
 分隔符比如"{"、"}"、"["、"]"、"("、")"、一个标识符、或一个可表示文本或数值的文字量，然后通称它们为Token，
@@ -51,6 +52,7 @@ rustc按字节流的方式读取代码文件，并对这些字节进行分析，
 // 示例lrfrc.rs变成如下Token流
 fn main ( ) { println ! ( "hello lrfrc" ) ; }
 ```
+
 ---
 * 文字量
 
@@ -97,8 +99,8 @@ let i = 123中，文字量123的内容对应的是一个值一百二十三，不
 * Rust BNF格式语法
 
 Rust作为一门语言，按照BNF规则定义了一组语法，以便开发者可理解和编写Rust程序；
-具体语法可参考：
-[<font color="blue">rust modules</font>](https://doc.rust-lang.org/stable/reference/items/modules.html)
+
+具体语法可参考：[<font color="blue">rust modules</font>](https://doc.rust-lang.org/stable/reference/items/modules.html)
 
 这些语法是由Rust语言设计开发人员定义的，其中往往使用语言的保留关键字比如:fn、impl等等来区别如何组合这些Token流;
 
@@ -384,6 +386,7 @@ promoted[1] in main: &[&str; 1] = {
     }
 }
 ```
+
 ---
 ###### H.将借用检查后的MIR转换成LLVM IR
 对MIR中含有泛化参数的函数进行monomorphized处理，即根据具体参数类型的不同，复制相关代码生成不同的函数；
@@ -426,6 +429,7 @@ bb2:
   ret void
 }
 ```
+
 ---
 ###### I.将LLVM IR生成二进制库或可执行程序
 使用LLVM库来转换LLVM IR生成对应的二进制库或可执行程序，其中主要逻辑包括将LLVM IR生成汇编代码，然后进行编译链接生成二进制代码；
@@ -481,21 +485,25 @@ rustc_lexer:用来Rust语言词法分析及TokenStream生成；
 rustc_parse:用来生成AST语法树；
 rustc_expand:用来进行宏扩展相关的实现，包括对过程宏及内嵌宏的实现等；
 rustc_attr:用来对属性相关实现；
+
 ---
 rustc_resolve:用来实现对标识的识别和解析等；
 rustc_ast:用来描述各种AST语言树节点定义及Vistor等；
 rustc_typeck:用来类型检查及转换等逻辑；
 rustc_ast_lowering:用来将AST转换成HIR；
+
 ---
 rustc_hir:用来描述HIR数据结构及相关实现；
 rustc_infer:用来类型及语义推导相关实现；
 rustc_traits：用来实现trait相关逻辑实现；
 rustc_ty/rustc_middle:用来描述中间描述及ty相关实现；
+
 ---
 rustc_mir:用来描述MIR数据结构及相关实现；
 rustc_mir_build:用来实现从HIR转换成MIR逻辑；
 rustc_codegen_ssa:用来实现MIR的通用逻辑；
 rustc_codegen_llvm:用来实现与llvm ir规范相关的LLVM IR转换；
+
 ---
 rustc_llvm:用来实现对llvm的ffi及封装调用； 
 rustc_arena：用来实现共享中间描述对象的平台；

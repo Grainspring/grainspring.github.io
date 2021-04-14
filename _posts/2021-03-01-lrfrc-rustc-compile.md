@@ -151,6 +151,7 @@ rustc代码库支持同一套代码编程生成的rustc可用来编译输出不�
 $ cd rust
 $ cp config.toml.example config.toml
 ```
+
 ---
 ###### A.针对wasm32编译目标
 修改config.toml如下
@@ -179,6 +180,7 @@ $ cp config.toml.example config.toml
 -#debuginfo-level = 0
 +debuginfo-level = 2
 ```
+
 ---
 ###### B.执行编译
 ```
@@ -257,12 +259,12 @@ $ objdump -d lrfrc.o
 ##### 3.其他
 配置vim支持rust语言，可方便跳转提示关联阅读rustc代码；
 使用gdb调试rustc；
-使用[https://play.rust-lang.org/](https://play.rust-lang.org/)在线编写、编译、分析rust代码；
+使用[<font color="blue">https://play.rust-lang.org/</font>](https://play.rust-lang.org/)在线编写、编译、分析rust代码；
 
 ---
 #### 三、rustc编译过程
 ##### 1.编译器自举编译
-  根据前面<font color="blue">[LRFRC系列前言](http://grainspring.github.io/2021/02/20/lrfrc-preview/)</font>中的说明，rustc编译器本身已完成编译自举，其主要逻辑如下：
+  根据前面[<font color="blue">LRFRC系列前言</font>](http://grainspring.github.io/2021/02/20/lrfrc-preview/)中的说明，rustc编译器本身已完成编译自举，其主要逻辑如下：
   要想编译出一个新的rustc编译器，首先需要选择一个以前编译出来的rustc编译器，用这个老的rustc编译器来编译rustc代码库以生成一个新的rustc编译器；
 
   但是由于rustc编译器与其std标准库代码往往在同一个git代码库，相互之间存在依赖，编译器与std标准库<可查看上面提到的编译结果>通常一块编译并输出，才可正常使用；
@@ -324,9 +326,9 @@ $ rustc --print sysroot
 
 ---
 参考
-* <font color="blue">[how to rustc build and run](https://rustc-dev-guide.rust-lang.org/building/how-to-build-and-run.html)</font>
-* <font color="blue">[rustc debugging](https://rustc-dev-guide.rust-lang.org/compiler-debugging.html)</font>
-* <font color="blue">[rustc bootstrapping](https://rustc-dev-guide.rust-lang.org/building/bootstrapping.html)</font>
+* [<font color="blue">how to rustc build and run</font>](https://rustc-dev-guide.rust-lang.org/building/how-to-build-and-run.html)
+* [<font color="blue">rustc debugging</font>](https://rustc-dev-guide.rust-lang.org/compiler-debugging.html)
+* [<font color="blue">rustc bootstrapping</font>](https://rustc-dev-guide.rust-lang.org/building/bootstrapping.html)
 
 ---
 更多文章可使用微信扫码公众二维码查看
