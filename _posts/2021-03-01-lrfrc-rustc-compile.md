@@ -257,20 +257,19 @@ $ objdump -d lrfrc.o
 ##### 3.其他
 配置vim支持rust语言，可方便跳转提示关联阅读rustc代码；
 使用gdb调试rustc；
-使用https://play.rust-lang.org/在线编写、编译、分析rust代码；
+使用[https://play.rust-lang.org/](https://play.rust-lang.org/)在线编写、编译、分析rust代码；
 
 ---
 #### 三、rustc编译过程
 ##### 1.编译器自举编译
-  根据前面[LRFRC系列前言](http://grainspring.github.io/2021/02/20/lrfrc-preview/)中的说明，rustc编译器本身已完成编译自举，其主要逻辑如下：
+  根据前面<font color="blue">[LRFRC系列前言](http://grainspring.github.io/2021/02/20/lrfrc-preview/)</font>中的说明，rustc编译器本身已完成编译自举，其主要逻辑如下：
   要想编译出一个新的rustc编译器，首先需要选择一个以前编译出来的rustc编译器，用这个老的rustc编译器来编译rustc代码库以生成一个新的rustc编译器；
 
   但是由于rustc编译器与其std标准库代码往往在同一个git代码库，相互之间存在依赖，编译器与std标准库<可查看上面提到的编译结果>通常一块编译并输出，才可正常使用；
 
   而在git代码库中有可能同时修改std标准库逻辑和编译器逻辑，这样让编译出一个完整的全新的编译器<包括对应std标准库>变得比较复杂，其编译过程被定义成不同阶段；
 
-<font color=red>stage0</font>:
-从网上下载一个老的beta编译器及其对应std库/cargo等，用beta rustc和std来编译当前代码库，输出当前代码库对应std和rustc<用新生成的std来链接>；
+<font color="red">stage0</font>:从网上下载一个老的beta编译器及其对应std库/cargo等，用beta rustc和std来编译当前代码库，输出当前代码库对应std和rustc<用新生成的std来链接>；
 
 ![lrfrc.compilerustc.0](/imgs/lrfrc.2.compilerustc.0.png "lrfrc.compilerustc.0")
 
@@ -279,16 +278,17 @@ $ objdump -d lrfrc.o
 ![lrfrc.compilerustc.1](/imgs/lrfrc.2.compilerustc.1.png "lrfrc.compilerustc.1")
 
   为啥还需要stage1和2呢?简单的看来，使用stage0的输出就可以，无须stage1和stage2进行再次编译输出，其实并不是这样，
+
   这是因为stage0中输出的rustc和std可能与beta中对应的rustc和std存在符号ABI不兼容，并存在对beta std库符号的引用或依赖，
+
   这样直接使用stage0中输出的rustc和std来编译开发人员开发的代码，就有可能还存在对beta中的rustc和std依赖，这是不符合要求的，
   所以需要stage1来进行再一次编译并输出；
 
 ![lrfrc.compilerustc.2](/imgs/lrfrc.2.compilerustc.2.png "lrfrc.compilerustc.2")
 
-<font color=#FF0000>stage2</font>:
-复制输出stage1输出的rustc和std，针对Host/Target不一致时需要重新生成对应std；
+<font color="red">stage2</font>:复制输出stage1输出的rustc和std，针对Host/Target不一致时需要重新生成对应std；
 
-stage3:可选的，用于sanity检查，使用stage2输出的rustc和std来编译当前代码库，生成的rustc和std应该跟stage2输出的完全一样；
+<font color="red">stage3</font>:可选的，用于sanity检查，使用stage2输出的rustc和std来编译当前代码库，生成的rustc和std应该跟stage2输出的完全一样；
 
   链接到rustc的std库和使用该rustc来编译开发人员开发的rust代码时所用的std库可能是不一样的；
 
@@ -324,11 +324,11 @@ $ rustc --print sysroot
 
 ---
 参考
-* [how to rustc build and run](https://rustc-dev-guide.rust-lang.org/building/how-to-build-and-run.html)
-* [rustc debugging](https://rustc-dev-guide.rust-lang.org/compiler-debugging.html)
-* [rustc bootstrapping](https://rustc-dev-guide.rust-lang.org/building/bootstrapping.html)
+* <font color="blue">[how to rustc build and run](https://rustc-dev-guide.rust-lang.org/building/how-to-build-and-run.html)</font>
+* <font color="blue">[rustc debugging](https://rustc-dev-guide.rust-lang.org/compiler-debugging.html)</font>
+* <font color="blue">[rustc bootstrapping](https://rustc-dev-guide.rust-lang.org/building/bootstrapping.html)</font>
 
-
+---
 更多文章可使用微信扫码公众二维码查看
 
 
