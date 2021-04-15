@@ -26,7 +26,7 @@ learn rust from rustc(LRFRC)系列文章尝试从另外一个角度来学习Rust
 ##### 1.从run_compile触发解析parse及分词逻辑
 rustc中解析和分词未使用第三方库比如flex、yacc等，完全使用Rust代码手工实现；
 
-根据<LRFRC系列:快速入门rustc编译器概览>中[<font color="blue">初识rustc编译主流程</font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#3初识rustc编译主流程)部分的run_compiler代码，
+根据[<font color="blue">LRFRC系列:快速入门rustc编译器概览</font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/)中[<font color="blue">初识rustc编译主流程</font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#3初识rustc编译主流程)部分的run_compiler代码，
 其中会调用queries::parse，然后会调用到passes::parse，
 
 进而调用到rustc_parse::parse_crate_from_file、

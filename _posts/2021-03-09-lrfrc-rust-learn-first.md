@@ -2,7 +2,7 @@
 layout: post
 title:  "LRFRC系列:快速入门Rust语言"
 date:   2021-03-09 20:06:05
-categories: Rust LRFRC 入门Rust
+categories: Rust LRFRC 入门Rust Rust基础 泛化 trait Rust宏
 excerpt: 学习Rust,编译器,rustc
 ---
 
