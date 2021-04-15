@@ -26,13 +26,15 @@ learn rust from rustc(LRFRC)系列文章尝试从另外一个角度来学习Rust
 ##### 1.从run_compile触发解析parse及分词逻辑
 rustc中解析和分词未使用第三方库比如flex、yacc等，完全使用Rust代码手工实现；
 
-根据<LRFRC系列:快速入门rustc编译器概览>中[[<font color="blue">初识rustc编译主流程</font>]](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#3初识rustc编译主流程)部分的run_compiler代码，
+根据<LRFRC系列:快速入门rustc编译器概览>中[<font color="blue">[初识rustc编译主流程]</font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#3初识rustc编译主流程)部分的run_compiler代码，
 其中会调用queries::parse，然后会调用到passes::parse，
+
 进而调用到rustc_parse::parse_crate_from_file、
 new_parser_from_file、
 source_file_to_parser、
 maybe_source_file_to_parser、
 maybe_file_to_stream，
+
 触发maybe_file_to_stream来实现由文件到TokenStream的分词处理；
 
 摘要代码如下：
@@ -51,10 +53,9 @@ pub fn run_compiler(
               |_| None);
             // 调用queries::parse
             queries.parse()?;
-            ............................
+            // ............................
         }
-```
-```
+
 src/librustc_interface/queries.rs
     pub fn parse(&self) -> Result<&Query<ast::Crate>> {
         self.parse.compute(|| {
@@ -67,8 +68,7 @@ src/librustc_interface/queries.rs
             })
         })
     }
-​```
-```
+
 src/librustc_interface/passes.rs
 pub fn parse<'a>(sess: &'a Session, input: &Input)
     -> PResult<'a, ast::Crate> {
@@ -81,10 +81,11 @@ pub fn parse<'a>(sess: &'a Session, input: &Input)
             , input.clone(), &sess.parse_sess)
         }
     })?;
-    ...............................
+    // ...............................
     Ok(krate)
 }
 ​```
+
 ```
 src/librustc_parse/lib.rs
 pub fn parse_crate_from_file<'a>(input: &Path
@@ -708,7 +709,7 @@ slice是Rust语言中定义的原生基础类型，就像i8等基础类型一样
 它是一个dynamically sized type，用来表示对一个类型为T的元素序列的可视化描述，
 其包含一组类型为T的元素序列的第一个元素的指针，和从这个指针开始可访问的元素的个数；
 
-<https://doc.rust-lang.org/stable/reference/types/slice.html>
+[<font color="blue">https://doc.rust-lang.org/stable/reference/types/slice.html</font>](https://doc.rust-lang.org/stable/reference/types/slice.html)
 
 ---
 ##### 2.对slice中的dynamically sized type<DST>理解
@@ -966,9 +967,9 @@ pub(crate) struct Cursor<'a> {
 
 ---
 参考
-<https://doc.rust-lang.org/stable/reference/types/slice.html>
-<https://doc.rust-lang.org/stable/reference/types/enum.html>
-<https://doc.rust-lang.org/stable/rust-by-example/flow_control/match.html>
+* [<font color="blue">https://doc.rust-lang.org/stable/reference/types/slice.html</font>](https://doc.rust-lang.org/stable/reference/types/slice.html)
+* [<font color="blue">https://doc.rust-lang.org/stable/reference/types/enum.html</font>](https://doc.rust-lang.org/stable/reference/types/enum.html)
+* [<font color="blue">https://doc.rust-lang.org/stable/rust-by-example/flow_control/match.html</font>](https://doc.rust-lang.org/stable/rust-by-example/flow_control/match.html)
 
 ---
 更多文章可使用微信扫公众号二维码查看
