@@ -446,6 +446,7 @@ fn main() {
 ---
 ###### E.引用/借用的生命周期
 * 引用/借用生命周期的出现
+
 随着前述规则的应用以及不同上下文之间的嵌套使用和返回，一个引用或借用所对应的值的所有权，有可能已经转移，而对它的引用/借用还存在，这样就会导致内存安全问题，
 
 为了解决这类问题Rust语言引入生命周期lifetime的概念，并且只有引用或借用类型的变量才有lifetime的逻辑。
@@ -541,6 +542,7 @@ fn main() {
 ```
 
 * lifetime省略
+
 为了简化部分场景lifetime的出现，Rust语言定义一组规则可来省略lifetime，同时保证语义上的正确，以便高效编写代码，更多具体省略方式请参考相关文档；
 
 ```
@@ -712,7 +714,6 @@ enum Option<T> {
 enum Result<T, E> {
     Ok(T),
     Err(E),
-​
 }
 ​```
 
@@ -723,6 +724,7 @@ enum Result<T, E> {
 编译器会根据上下文逻辑来推导分析检查出其值，判断其是否符合lifetime变量的赋值规则；
 
 最基本的lifetime变量赋值规则：更大范围的变量的值可以向内部更小范围内或相同范围内的变量赋值；
+
 ```
 // struct中带有引用类型字段变量，需要指定lifetime
 struct User<'a> {
@@ -750,6 +752,7 @@ let mut user1 = User {
 Rust中描述某个type实现了某个trait，往往表示其type对象具有某种特性或能力或不具有某种特性比如:语言自带的Sync、Send、!Sync、!Send；
 
 一个trait未必一定有一组方法，不过一般来讲，这些特性或能力trait会表现为包含一组方法；
+
 ```
 pub trait Summary {
     fn summarize(&self) -> String;
@@ -787,6 +790,7 @@ impl Summary for Tweet {
 ---
 ###### B.Rust语言内置定义多个trait
 具体每个trait的定义，随着后续学习来深入理解
+
 ```
 pub trait Sized {
     // Empty.
@@ -822,6 +826,7 @@ impl !Unpin for PhantomPinned {}
 
 ---
 ###### C.trait用作参数
+
 ```
 pub fn notify(item: &impl Summary) {
     println!("Breaking news! {}", item.summarize());
@@ -831,6 +836,7 @@ pub fn notify(item: &impl Summary) {
 ---
 ###### D.trait用于Bound及泛化中
 使用+来组合描述type对象具有或实现了多种trait
+
 ```
 pub fn notify<T: Summary>(item: &T) {
     println!("Breaking news! {}", item.summarize());
@@ -852,6 +858,7 @@ fn some_function<T, U>(t: &T, u: &U) -> i32
 ##### 10.宏
 宏作为Rust中内置的强大特性，其往往包含两部分，一部分用来定义宏，一部分用来使用宏。
 这里只是作个简单的示例，后续再深入学习应用理解。
+
 ```
 // 宏调用，使用宏名加!来触发
 println!("hello lrfrc!");

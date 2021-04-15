@@ -26,7 +26,7 @@ learn rust from rustc(LRFRC)系列文章尝试从另外一个角度来学习Rust
 ##### 1.从run_compile触发解析parse及分词逻辑
 rustc中解析和分词未使用第三方库比如flex、yacc等，完全使用Rust代码手工实现；
 
-根据<LRFRC系列:快速入门rustc编译器概览>中[<font color="blue">[初识rustc编译主流程]</font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#3初识rustc编译主流程)部分的run_compiler代码，
+根据<LRFRC系列:快速入门rustc编译器概览>中[<font color="blue">[初识rustc编译主流程]</font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/)部分的run_compiler代码，
 其中会调用queries::parse，然后会调用到passes::parse，
 
 进而调用到rustc_parse::parse_crate_from_file、
@@ -38,6 +38,7 @@ maybe_file_to_stream，
 触发maybe_file_to_stream来实现由文件到TokenStream的分词处理；
 
 摘要代码如下：
+
 ```
 pub fn run_compiler(
     at_args: &[String],
@@ -45,7 +46,7 @@ pub fn run_compiler(
     file_loader: Option<Box<dyn FileLoader + Send + Sync>>,
     emitter: Option<Box<dyn Write + Send>>,
 ) -> interface::Result<()> {
-    ..............................
+    // ..............................
     interface::run_compiler(config, |compiler| {
         let sess = compiler.session();
         let linker = compiler.enter(|queries| {
@@ -84,7 +85,7 @@ pub fn parse<'a>(sess: &'a Session, input: &Input)
     // ...............................
     Ok(krate)
 }
-​```
+```
 
 ```
 src/librustc_parse/lib.rs
@@ -166,6 +167,7 @@ pub fn maybe_file_to_stream(
 ---
 ##### 3.定义StringReader及其into_token_trees方法生成TokenStream
 定义StringReader，可调用其into_token_trees来生成TokenStream
+
 ```
 // StringReader结构中使用ParseSess对象的引用，需要lifetime 'a
 pub struct StringReader<'a> {
@@ -211,6 +213,7 @@ impl<'a> StringReader<'a> {
     }
 }
 ```
+
 ```
 // 由于其包含的StringReader定义包含lifetime 'a，
 // 所以TokenTreesReader的定义也需要包含lifetime 'a
@@ -294,6 +297,7 @@ impl<'a> TokenTreesReader<'a> {
 
 ---
 ##### 4.lexer::next_token生成下一个Token
+
 ```
 src/librustc_parse/lexer/mod.rs
     /// Returns the next token, including trivia 
@@ -339,6 +343,7 @@ src/librustc_parse/lexer/mod.rs
 ---
 ##### 5.rustc_lexer::first_token及advance_token使用Cursor来识别生成Token
 ###### A.解读Cursor中的lifetime 'a
+
 ```
 src/librustc_lexer/src/cursor.rs
 /// Peekable iterator over a char sequence.
@@ -357,6 +362,7 @@ pub(crate) struct Cursor<'a> {
 
 ---
 ###### B.解读Chars中的lifetime 'a
+
 ```
 library/core/src/str/mod.rs
 /// 从Chars定义可看出它包含一个string slice的遍历器
@@ -372,6 +378,7 @@ pub struct Chars<'a> {
 
 ---
 ###### C.解读slice::Iter定义
+
 ```
 library/core/src/slice/mod.rs
 /// Immutable slice iterator
@@ -406,6 +413,7 @@ pub struct Iter<'a, T: 'a> {
 
 ---
 ###### E.调用first_token生成Cursor并调用其advance_taken，取出下一个token
+
 ```
 /// Parses the first token from the provided input string.
 /// 接收&str类型参数input如何构建Chars，请参考后续解读
@@ -417,6 +425,7 @@ pub fn first_token(input: &str) -> Token {
 
 ---
 ###### F.advance_token使用match语句来区分token kind，返回token
+
 ```
 /// match语句及enum类型使用，请参考后续match、enum类型解读
 impl Cursor<'_> {
@@ -547,6 +556,7 @@ impl Cursor<'_> {
 ...........................................
 }
 ```
+
 ```
 /// 判断是否标识符的首字符，不能是数字
 /// True if `c` is valid as a first character of an identifier
@@ -567,6 +577,7 @@ pub fn is_id_start(c: char) -> bool {
 
 ---
 ##### 6.Token定义
+
 ```
 /// Parsed token.
 /// It doesn't contain information about data 
@@ -665,6 +676,7 @@ pub enum TokenKind {
     Unknown,
 }
 ```
+
 ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum LiteralKind {
@@ -737,6 +749,7 @@ slice类型[T]，本身不包含类型T的元素序列的内容，但包含元�
 
 结合rustc编译器和Rust语法来定义这样的slice类型，
 以实现高效和内存安全，安全的遍历内存中的一组元素比如数组、字符序列等；
+
 ```
 let s = String::from("hello world");
 ​
@@ -765,6 +778,7 @@ String提供as_ref/as_str方法实现到&str类型的转换；
 
 &str类型值往往来自于文字量或String的方法；
 文字量也可以生成String类型变量；
+
 ```
 /// let a = "foo"; // a为&str，不是str
 /// let s = String::from("foo");
@@ -785,6 +799,7 @@ String提供as_ref/as_str方法实现到&str类型的转换；
 std中提供了方法来实现下列类型及其值的转换
 从[T;n]、&[T; n]、&mut [T; n]到&[T]的转换；
 mut [T;n]、&mut [T; n]到&mut [T]的转换；
+
 
 ```
 /// // First, we declare a type which has `iter_mut`
@@ -824,6 +839,7 @@ enum类型值的占用空间大小，是其所有不同分类值对应的数据�
 enum类型可以看成是一个特殊的struct类型，其中值只能是其定义的分类值中一种，
 
 并且同一enum类型下不同值，未必能相互转换，构建enum类型值往往采取enum变量表达式的方式；
+
 ```
 enum Animal {
     Dog(String, f64),
@@ -842,6 +858,7 @@ let m = Message::Move { x: 50, y: 200 };
 ##### 2.访问enum类型值
 由于enum类型值可包含不同分类值，并且每个分类值有自定义的字段，
 往往使用match表达式来读取其中包含的各种字段的值；
+
 ```
 // Create an `enum` to classify a web event. Note how both
 // names and type information together specify the variant:
@@ -880,6 +897,7 @@ fn inspect(event: WebEvent) {
 #### 四、match表达式
 ##### 1.match表达式基础
 match表达式跟其他语言switch语句类似，但语法和语义有很大的区别，灵活性和功能更强大；
+
 ```
 let x = 1;
 match x {
@@ -903,6 +921,7 @@ match x {
 
 ---
 ###### B.从匹配表达式中获取绑定值
+
 ```
 // A function `age` which returns a `u32`.
 fn age() -> u32 {
@@ -953,6 +972,7 @@ match表达式是Rust语言中比较独特的特性，还有其他如：匹配�
 ---
 #### 2.思考与回顾
 下面代码中StringReader、Cursor为啥需要使用lifetime ’a，这样的好处是啥，其对应被引用的对象的lifetime究竟在哪？
+
 ```
 pub struct StringReader<'a> {
     sess: &'a ParseSess,
