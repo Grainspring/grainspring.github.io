@@ -715,7 +715,7 @@ enum Result<T, E> {
     Ok(T),
     Err(E),
 }
-​```
+```
 
 ---
 ###### B.泛化与lifetime
@@ -807,6 +807,7 @@ pub trait Copy: Clone {
 pub unsafe auto trait Sync {
     // Empty
 }
+
 pub unsafe auto trait Send {
     // empty.
 }
