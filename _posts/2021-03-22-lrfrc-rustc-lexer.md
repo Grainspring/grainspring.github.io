@@ -970,7 +970,7 @@ match表达式是Rust语言中比较独特的特性，还有其他如：匹配�
 从中学习理解对String、str、&str、[T;n]、[T]、&[T]、match及其@表达式等的使用；
 
 ---
-#### 2.思考与回顾
+##### 2.思考与回顾
 下面代码中StringReader、Cursor为啥需要使用lifetime ’a，这样的好处是啥，其对应被引用的对象的lifetime究竟在哪？
 
 ```
