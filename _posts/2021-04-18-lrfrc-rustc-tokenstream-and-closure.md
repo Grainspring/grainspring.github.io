@@ -24,7 +24,7 @@ LRFRC系列文章尝试从另外一个角度来学习Rust语言，通过了解�
 所以更需要深入理解与运用。
 
 ---
-#### 一、rustc如何实现tokenstream
+#### 一、rustc如何实现tokenstream生成
 这部分触发解析parse及分词逻辑与[<font color="blue">以前介绍</font>](http://grainspring.github.io/2021/03/22/lrfrc-rustc-lexer/#1从run_compile触发解析parse及分词逻辑)的类似，在这里会更具体展示与TokenStream相关的内容。
 ##### 1.从run_compile触发解析parse及分词逻辑
 rustc中解析和分词未使用第三方库比如flex、yacc等，完全使用Rust代码手工实现；
@@ -1028,7 +1028,7 @@ fn main() {
     // println!("There're {} elements in vec", haystack.len());
 ```
 
-##### 4.闭包变量的类型FnOnce、FnMut、Fn
+##### 4.闭包变量对应trait类型FnOnce、FnMut、Fn
 前面提到每一个闭包变量会上下文变量进行引用或借用或拥有所有权，并且可以有返回值；
 
 试想如果一个闭包变量拥有上下文变量的所有权并且调用一次后通过返回的方式移除了变量的所有权，
