@@ -15,13 +15,11 @@ Rust作为一门新的系统语言，具有高性能、内存安全可靠、高�
 
 LRFRC系列文章尝试从另外一个角度来学习Rust语言，通过了解编译器rustc基本原理来学习Rust语言，以便更好的理解和分析编译错误提示，更快的写出更好的Rust代码。
 
-根据前面[<font color="blue">LRFRC系列:rustc如何实现分词</font>](http://grainspring.github.io/2021/03/22/lrfrc-rustc-lexer/)了解到rustc使用rustc_lexer对输入文件进行Token分词处理，并生成一系列Token，对lexer中生成Token后未进行进一步解读，现对如何根据这些Token来生成TokenStream进行解读。
+根据前面[<font color="blue">LRFRC系列:rustc如何实现分词</font>](http://grainspring.github.io/2021/03/22/lrfrc-rustc-lexer/)了解到rustc使用rustc_lexer对输入文件进行Token分词处理，并生成一系列Token，对lexer生成Token后未进行进一步解读，现对如何根据这些Token生成TokenStream进行解读。
 
-另外为啥需要单独介绍TokenStream，其实与Rust中强大的宏有关，特别是过程宏中会使用类似TokenStream等来进行宏的定义，
+另外为啥需要单独介绍TokenStream，其实与Rust中强大的宏有关，特别是过程宏中会使用类似TokenStream概念来进行宏的定义，
 
-所以对TokenStream的理解会对Rust中的宏有一定帮助，特别是Rust这种特性在其他高级语言比如C++、Java、Go等中比较少见，
-
-所以更需要深入理解与运用。
+所以对TokenStream的理解会对Rust中的宏使用有一定帮助，特别是Rust这种高级特性在其他高级语言比如C++、Java、Go等中比较少见，所以更需要深入理解与运用。
 
 ---
 #### 一、rustc如何实现tokenstream生成
@@ -38,7 +36,7 @@ source_file_to_parser、
 maybe_source_file_to_parser、
 maybe_file_to_stream，
 
-触发maybe_file_to_stream来实现由文件到TokenStream的分词处理；
+触发maybe_file_to_stream来实现由文件到TokenStream对象生成；
 
 摘要代码如下：
 
@@ -314,7 +312,7 @@ impl<'a> TokenTreesReader<'a> {
 ```
 
 ---
-##### 4.lexer::next_token生成下一个rustc_ast::Token
+##### 4.StringReader::next_token生成下一个rustc_ast::Token
 
 ```
 src/librustc_parse/lexer/mod.rs
@@ -339,17 +337,17 @@ src/librustc_parse/lexer/mod.rs
 ```
 
 ---
-##### 5.使用cook_lexer_token转换rustc_lexer::TokenKind成rustc_ast::TokenKind
+##### 5.将rustc_lexer::TokenKind转换成rustc_ast::TokenKind
 仔细阅读代码会发现，前面介绍的rustc_lexer::Token，包含了一个TokenKind及len，
 
 并且其TokenKind的Ident只是一个未包含其他内容的字段，
 
 哪该Ident标识类型对应的具体内容比如：lrfrc.rs中的fn、main等，
 
-在分词完成后会在哪里提取出来并保存下来呢？
+在分词完成后会在哪里提取出来并保存下来呢？具体由cook_lexer_token来实现
 
 其实rustc中对Token的定义有两种，一种为rustc_lexer::Token，[<font color="blue">前面有介绍</font>](http://grainspring.github.io/2021/03/22/lrfrc-rustc-lexer/#6token定义)，
-另一种是rustc_ast::Token，后续会来介绍。
+另一种是rustc_ast::Token，[<font color="blue">后续会来介绍</font>](http://grainspring.github.io/2021/04/18/lrfrc-rustc-tokenstream-and-closure/#6rustc_asttoken及tokenkind)。
 
 ```
 src/librustc_parse/lexer/mod.rs
@@ -489,9 +487,9 @@ pub fn nfc_normalize(string: &str) -> Symbol {
 ```
 
 ##### 6.rustc_ast::Token及TokenKind
-src/librustc_ast/token.rs
 
 ```
+src/librustc_ast/token.rs
 pub struct Token {
     pub kind: TokenKind,
     pub span: Span,
@@ -622,7 +620,7 @@ pub struct Span {
 ##### 7.Symbol和SymbolIndex
 struct Symbol中包含一个struct SymbolIndex，而SymbolIndex的具体定义
 
-由rustc_index::newtype_index宏来决定，SymbolIndex只是一个索引。
+由rustc_index::newtype_index宏来决定，SymbolIndex可认为只是一个索引。
 
 ```
 src/librustc_span/sydmbol.rs
@@ -684,7 +682,7 @@ macro_rules! newtype_index {
 
 这样的好处在于如果有多个同样的字符串，则只需要维护一份字符串空间，节省内存空间，
 
-后续要使用这个字符串时可根据其对应的Symbol索引来获取即可。
+后续要使用这个字符串时可根据其对应的Symbol索引来获取。
 
 ```
 // If this ever becomes non thread-local, `decode_syntax_context`
@@ -757,16 +755,16 @@ impl Interner {
 ##### 9.TokenTree和TokenStream
 TokenTree包含一个Token或者用一个分隔符分隔的TokenStream,
 
-TokenStream是一个(TokenTree, IsJoin)对组成的数组；
+TokenStream是一个(TokenTree, IsJoint)对组成的数组；
 
-根据前面parse_token_tree的代码知道只有Token.is_op返回true时，
+根据前面parse_token_tree的代码知道只有token.is_op返回true时使用Joint，
 
-才表示当前TokenTree是否需要与前一个TokenTree中的TokenStream结合在一起；
+表示当前TokenTree是否需要与前一个TokenTree中的TokenStream结合在一起；
 
 一般说来比如：分隔符{、}、(、)、[、]、文字量、标识符、注释、空格等
 不需要与前一个TokenStream结合一起；
 
-TokenTree::Delimited类型对象，由parse_token_tree中遇到分隔符{}或()或[]时来创建；
+TokenTree::Delimited类型对象，由parse_token_tree中遇到分隔符{}或()或[]时创建；
 
 ```
 src/librustc_ast/tokenstream.rs
@@ -827,11 +825,11 @@ src/librustc_ast/token.rs
 
 最终生成由rustc_ast::Token类型组成的TokenTree及TokenStream.
 
-其中TokenStream是有{}或()或[]包围起来的TokenTree数组；
+其中TokenStream是由{}或()或[]包围起来的TokenTree数组；
 
-标识符及文字量采取arena内存池的方式来保存，以SymbolIndex的方式记录在Token中；
+标识符及文字量采取arena内存池的方式来保存，以Symbol的方式记录在Token中；
 
-生成TokenStream对象后由传入stream_to_parser生成rustc_parse::Parser对象，
+生成TokenStream对象后会传入stream_to_parser生成rustc_parse::Parser对象，
 
 然后调用其parse_crate_mod方法生成ast::Crate语法树，具体实现下次解读；
 
@@ -864,21 +862,21 @@ with_interner方法则调用SESSION_GLOBALS.with方法，传入的参数也是�
 
 在第2个闭包执行的逻辑中完成对第1个闭包的调用，
 
-在第1个闭包的执行逻辑中，使用Symbol::intern方法的参数string，
+在第1个闭包的执行逻辑中，会使用Symbol::intern方法提供的参数string，
 
-进而调用第1个闭包被调用是传来的参数interner的intern方法，完成对Symbol的创建；
+进而调用第1个闭包被调用时传来的参数interner的intern方法，完成对Symbol的创建；
 
-至于第2个闭包具体如何被调用由SESSION_GLOBALS.with内部实现来决定；
+至于第2个闭包具体如何被调用，由SESSION_GLOBALS.with内部实现来决定；
 
 整个逻辑看起来比较直观，特别是对使用过javascript或其他语言闭包的同学来讲，
 
-但Rust语言中的闭包，除了可作为轻量的匿名的函数来调用并返回值、
+但Rust语言中的闭包，除了可作为轻量的匿名的函数来调用、
 
 其运行逻辑可自动使用闭包定义的上下文代码中其他的变量<比如示例中的string参数>之外，
 
-由于Rust语言的类型安全，为了明确保证调用闭包时传入的参数和从代码上下文中自动获取的参数传递的引用、借用或移动属性，
+为了符合Rust语言的类型安全，需要明确保证调用闭包时传入的参数和从代码上下文中自动获取的参数的引用、借用或移动属性，
 
-从而额外定义了FnOnce、Fn、FnMut相关逻辑，这样往往给初学者带来更多语法及使用上的挑战；
+从而额外定义了FnOnce、FnMut、Fn相关逻辑，这样往往给初学者带来更多语法及使用上的挑战；
 
 ```
 impl Symbol {
@@ -910,7 +908,7 @@ impl Interner {
 
 定义了一个fn则描述了这个函数本身的值以及其对应的类型是函数类型；
 
-闭包表达式一般包含对应的匿名类型，具体类型由编译器根据逻辑表达式使用的参数及闭包参数自动推导出来；
+闭包表达式一般包含对应的匿名类型，具体类型由编译器根据可执行的表达式使用的参数及闭包参数自动推导出来；
 
 ```
 ClosureExpression :
@@ -950,7 +948,7 @@ fn main() {
 ```
 
 ##### 3.闭包如何自动获取变量值的引用、借用、所有权属性
-编译器对自动抓取的上下文环境变量的值按照先引用、然后借用，最后转移所有权的方式来推导对变量值的使用。
+编译器对自动获取的上下文环境中的变量值按照先引用、然后借用，最后转移所有权的方式来尝试推导对变量值的使用。
 
 如果能使用引用推导成功，则直接使用值引用的方式，否则尝试使用借用或转移所有权的方式来推导；
 
@@ -1042,9 +1040,9 @@ fn main() {
 
 如果一个闭包变量既没有移除变量的所有权，又没有通过借用方式改写上下文变量的值，
 
-它可以再次被调用，则其类型表示为Fn；
+它可以多次被调用，则其类型表示为Fn；
 
-没有获取任何上下文变量的闭包变量，可认为其类型为Fn，可以调用多次；
+没有获取任何上下文变量的闭包变量，可认为其类型为Fn，可以被调用多次；
 
 在Rust语言内部FnOnce、FnMut、Fn被抽象成带泛化参数的trait，并且它们之间有继承关系，
 子trait可以当成父trai来使用，分别提供了call_once、call_mut、call方法；
@@ -1101,7 +1099,7 @@ f(|| {
 ##### 5.闭包参数及类型推导
 ClosureExpression中ClosureParameters的类型及变量，与前面提到的上下文变量的使用及所有权是另一个回事，
 
-它不受闭包move选项的影响，根据其定义来，如果在其定义中可以指定具有类型比如T或&T或&mut T，
+它不受闭包move选项的影响，根据其定义来，如果在其定义中有指定具有类型比如T或&T或&mut T，
 
 则要求调用者传递对应的符合规则的变量，如果没有明确其参数的变量类型，则由编译器自动推导闭包参数变量的类型
 以及适配外部调用时传递的参数；
@@ -1237,14 +1235,14 @@ let list_of_statuses: Vec<Status> = (0u32..20).map(Status::Value).collect();
 #### 三、总结与回顾
 通过前面的分析与解读，学习了Rust语言重要特性闭包的使用方式及特点比如Fn、FnMut、FnOnce等；
 
-以实例的方式展示rustc使用闭包的方式，将标识符和文字量对应字符串转换成SymbolIndex和Symbol，
+以示例的方式展示rustc使用闭包来将标识符和文字量对应字符串转换成SymbolIndex和Symbol，
 
 以便节省内存和方便访问对应字符串；
 
 将rustc_lexer::Token转换成rustc_ast::Token后，构建由TokenTree数组组成的TokenStream，
 TokenTree由一个Token或一个由分隔符触发的TokenStream组成；
 
-生成TokenStream后，则生成Parser对象，以便后续构建抽象语法树AST；
+生成TokenStream对象后，则生成Parser对象，以便后续构建抽象语法树AST；
 
 
 ---
