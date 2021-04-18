@@ -166,8 +166,8 @@ pub fn maybe_file_to_stream(
 ```
 
 ---
-##### 3.定义StringReader及其into_token_trees方法生成TokenStream
-定义StringReader，可调用其into_token_trees来生成TokenStream
+##### 3.定义StringReader及其into_token_trees方法生成TokenStream对象
+定义StringReader，可调用其into_token_trees来生成TokenStream对象
 
 ```
 // StringReader结构中使用ParseSess对象的引用，需要lifetime 'a
@@ -816,14 +816,14 @@ src/librustc_ast/token.rs
     }
 ```
 
-##### 10.TokenStream生成及后续处理
+##### 10.TokenStream对象生成及后续处理
 从rustc_parse::maybe_file_to_stream开始，
 调用rustc_parse::lexer::StringReader::into_token_trees，
 
 然后调用rustc_parse::lexer::TokenTreesReader::parse_all_token_trees，
 及其parse_token_tree和real_token，
 
-最终生成由rustc_ast::Token类型组成的TokenTree及TokenStream.
+最终生成由rustc_ast::Token类型组成的TokenTree及TokenStream对象.
 
 其中TokenStream是由{}或()或[]包围起来的TokenTree数组；
 
@@ -1031,7 +1031,7 @@ fn main() {
 
 试想如果一个闭包变量拥有上下文变量的所有权并且调用一次后通过返回的方式移除了变量的所有权，
 
-那么调用一次这样的闭包变量后，则不能再次调用，因为要符合由于Rust的类型安全限制，
+那么调用一次这样的闭包变量后，则不能再次调用，因为要符合Rust的类型安全限制，
 所以这样的闭包变量的类型表示为FnOnce；
 
 如果一个闭包变量没有移除变量的所有权，但通过借用方式改写了上下文变量的值，
@@ -1051,7 +1051,7 @@ fn main() {
 
 如果使用不当，则提示编译失败；
 
-如果函数参数中有包括对FnOnce、FnMut、Fn trait的使用，编译会自动检查传入的闭包变量是否满足要求；
+如果函数参数中有包括对FnOnce、FnMut、Fn trait的使用，编译会自动检查传入的闭包变量或函数指针是否满足要求；
 
 ```
 pub trait FnOnce<Args> {
