@@ -32,6 +32,7 @@ maybe_file_to_stream实现由文件到[<font color="blue">TokenStream对象生�
 然后使用stream_to_parser由TokenStream对象生成Parser对象，
 
 然后调用Parser对象方法parse_crate_mod来生成语法树根ast::Crate对象；
+
 摘要代码如下：
 
 ```
@@ -190,8 +191,9 @@ impl<'a> Parser<'a> {
 ---
 ##### 4.parse_crate_mod如何生成ast::Crate
 parse_crate_mod作为解析器主入口，将整个源代码当成根mod进行解析；
-由parse_crate_mod开始，然后调用parse_mod，parse_mod_items，
-parse_item；
+
+由parse_crate_mod开始，然后调用parse_mod，parse_mod_items，parse_item；
+
 由解析出来的item，生成Mod、Crate对象并最终返回；
 
 ```
@@ -290,7 +292,7 @@ pub(super) fn parse_item_common(
     attrs_allowed: bool,
     req_name: ReqName,
 ) -> PResult<'a, Option<Item>> {
-// 省略部分检查代码
+    // 省略部分检查代码
     let mut unclosed_delims = vec![];
     let has_attrs = !attrs.is_empty();
     // 定义一个闭包并且指定其this参数类型，
@@ -357,8 +359,9 @@ fn parse_item_common_(
 ---
 ##### 6.parse_item_kind如何解析生成item ident和kind
 parse_item_kind会根据当前token是否为指定的关键词，
-分别解析成不同类型的item，比如：
-USE、FUNCTION、EXTERN、STATIC、CONST、TRAIT、IMPL、
+分别解析成不同类型的item；
+
+Item类型有:USE、FUNCTION、EXTERN、STATIC、CONST、TRAIT、IMPL、
 MODULE、TYPE、ENUM、STRUCT、UNION、MACRO_RULES、
 MACRO INVOCATION等；
 
@@ -467,6 +470,8 @@ pub fn eat_keyword(&mut self, kw: Symbol) -> bool {
     }
 }
 
+/// 预读取一段token，并用looker闭包来检查对应token，
+/// 然后返回looker闭包的结果
 pub fn look_ahead<R>(&self, dist: usize
     , looker: impl FnOnce(&Token) -> R) -> R {
     if dist == 0 {
@@ -497,18 +502,20 @@ pub fn look_ahead<R>(&self, dist: usize
 
 然后使用其parse_crate_mode、parse_mod、parse_mod_items、
 
-parse_item、parse_item_kind和bump、eat_keyword、look_ahead等方法，
+parse_item、parse_item_kind和bump、eat_keyword、look_ahead等方法；
 
+---
 从token stream中逐步读取出token或预读取token来检查是否匹配指定的关键词，
 
 如果符合指定规则，则继续进行解析匹配，直到完成一个个item的生成；
 
-
-具体遇到什么样的token需要符合怎么的规则，才可定义为是什么样的item？
+---
+具体遇到什么样的token需要符合怎么的规则，可定义为是什么样的item？
 
 这些需要由具体的Rust语言语法规则来决定；
 
-这里只是简单涉及到Mod及Items定义，其它规则及定义会比较多，
+---
+这次简单涉及到Mod及Item定义，其它规则及定义会比较多，
 
 期待下一次来解读Rust语言中其他的语法要点以及语法树节点的定义及生成；
 
