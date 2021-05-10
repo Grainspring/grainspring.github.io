@@ -38,13 +38,13 @@ Rust语言中涉及的概念首先会在语法上进行定义，然后会有它�
 
 其中大写的字符，对应一个token；符合驼峰式写法的字符，对应语法单元；小写的字符，对应其字面表达的字符；
 
-使用()来进行分组，?表示可选，*表示零个或多个，+表示至少1个，|表示或者，[]表示其中任意字符；
+使用\(\)来进行分组，\?表示可选，\*表示零个或多个，+表示至少1个，|表示或者，\[\]表示其中任意字符；
 
 ---
 ##### 4.Crate和Item语法解读
-由于Rust语言中定义的语法非常多，下面尝试对Crate和Item语法的定义进行逐句解读，以便理解Rust语言是如何来定义语法规则；
+由于Rust语言中定义的语法非常多，下面尝试对Crate和Item语法的定义进行逐句解读，以便理解Rust语言如何使用语法规则定义语法元素；
 
-对这个基础有理解之后，后续可自行举一反三学习理解其他元素的语法；
+对这些有理解之后，后续可自行举一反三学习理解其他元素的语法；
 
 其他语法元素的定义请阅览[<font color="blue">Rust语言参考</font>](https://doc.rust-lang.org/stable/reference/)；
 
@@ -74,7 +74,7 @@ Item语法定义如下：
 
 ```
 Syntax:
-Item: //驼峰式写法的Item，表示对应Item语法单元或语法树节点，它由下面的语法单元组成
+Item: //驼峰式写法的Item，对应Item语法单元或语法树节点，它由下面的语法单元组成
    OuterAttribute* //零个或多个驼峰式写法的OuterAttribute语法单元，其定义请参考其对应语法定义
       VisItem //VisItm或MacroItem语法单元
    | MacroItem
@@ -116,7 +116,7 @@ MacroItem语法单元由宏调用MacroInvocationSemi或宏规则定义MacroRules
 
 ---
 ##### 6.rustc中Crate、Mod、Item的定义
-rustc作为Rust语言的实现者，由对应结构定义来描述相应的语法单元；
+rustc作为Rust语言的实现者，需要有对应结构定义来描述相应的语法单元；
 
 rustc中结构体Crate定义与其对应语法Crate中定义稍有不同，其包含属性和Mod，而不是语法Crate中属性和Item；
 
@@ -184,11 +184,11 @@ pub struct Item<K = ItemKind> {
 }
 ```
 
-rustc使用enum来描述不同的Item类型，统一语法VisItem和MacroItem的描述；
+rustc使用enum来描述不同的Item类型，统一语法元素VisItem和MacroItem的描述；
 
-Rust语言enum类型的强大在于其既包含分类信息，又可包含不同子字段，两者可有机组合；
+Rust语言enum类型的强大在于其既可包含分类信息，又可包含不同子字段及其值；
 
-用来描述Rust语言中Item元素非常的直观和方便，看注释就能大致理解其要表达的内容；
+两者有机组合用来描述Rust语言中Item元素非常的直观和方便，看注释就能大致理解其要表达的内容；
 
 ```
 #[derive(Clone, Encodable, Decodable, Debug)]
@@ -409,10 +409,10 @@ LetStatement :
 
 ---
 ###### F.Pattern语法
-Pattern语法是Rust中最为特殊的一个语法，特别是相对其他语言；
+Pattern语法是Rust中较为特殊的一个语法，特别是相对其他语言；
 
 它可以是文字量模式、标识符模式、通配模式、范围模式、引用模式、结构模式、Tuple模式、
-分组模式、分片模式、路径模式、宏调用模式；
+分组模式、分片模式、路径模式、宏调用模式等；
 
 ```
 Syntax
@@ -431,7 +431,7 @@ Pattern :
    | MacroInvocation
 ```
 
-它往往用于变量声明、函数或闭包中参数赋值，这些声明的变量类型由编译器来推导；
+它往往用于变量声明、函数或闭包中参数赋值，这些声明的变量类型可由编译器来推导；
 
 比如已有一个变量值，其类型可以是结构或Tuple类型，
 从该变量的类型中获取指定字段的内容来声明一个新的变量；
@@ -454,11 +454,11 @@ if let
         age: person_age @ 13..=19,
         name: ref person_name,
         ..
-    }部分即为Pattern结构语法，
+    } 部分即为Pattern语法，
 // 它检查person变量是否为Person结构，并且其字段car变量有一些值；
-// 检查如果其字段age的值在[13,19]之间，则声明一个变量person_age并且其值绑定为age字段的值；
+// 检查如果其字段age的值在[13,19]之间，则声明一个变量person_age并将其值绑定为age字段的值；
 // 声明一个变量person_name，它引用person变量的name字段的值；
-// person的生命周期维护在整个if let语句中，所以引用类型person_name可在{}中使用；
+// person的生命周期维护在整个if let语句中，所以引用类型变量person_name可用作{}中的println参数；
 ```
 
 ```
