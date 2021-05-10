@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "LRFRC系列:深入理解Rust语法"
+title:  "LRFRC系列:深入理解Rust主要语法"
 date:   2021-05-10 22:06:06
 categories: Rust LRFRC AST
 excerpt: 学习Rust,分词,rustc,AST,语法树
@@ -22,7 +22,7 @@ LRFRC系列文章尝试从另外一个角度来学习Rust语言，通过了解�
 ##### 1.语法规则基础
 通过对[<font color="blue">LRFRC系列:快速入门rustc编译器概览-生成基础AST></font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#c%E5%88%86%E6%9E%90tokenstream%E7%94%9F%E6%88%90%E5%9F%BA%E7%A1%80ast)一节中介绍的语法规则及BNF格式语法有认知之后，
 
-通过对Rust语言定义的BNF格式语法进行学习理解，这样才能理解Rust语言中涉及的概念；
+通过对Rust语言定义的BNF格式语法进行学习理解，才能理解Rust语言中涉及的概念；
 
 Rust语言中涉及的概念首先会在语法上进行定义，然后会有它在不同上下文中对应的语义，进而表达Rust代码中所要实现的含义；
 
@@ -41,7 +41,7 @@ Rust语言中涉及的概念首先会在语法上进行定义，然后会有它�
 使用\(\)来进行分组，\?表示可选，\*表示零个或多个，+表示至少1个，|表示或者，\[\]表示其中任意字符；
 
 ---
-##### 4.Crate和Item语法解读
+##### 4.Crate和Item语法元素解读
 由于Rust语言中定义的语法非常多，下面尝试对Crate和Item语法的定义进行逐句解读，以便理解Rust语言如何使用语法规则定义语法元素；
 
 对这些有理解之后，后续可自行举一反三学习理解其他元素的语法；
@@ -122,7 +122,7 @@ rustc中结构体Crate定义与其对应语法Crate中定义稍有不同，其�
 
 这样的目的在于将其可能包含的Items自动内建到一个默认的Mod中，以便统一Crate、Mod、Item之间的关系；
 
-另外这个内建的Mod比较特殊，没有名称，是内建的；
+另外这个内建的Mod比较特殊，没有名称，属于内建的根Mod；
 
 Module语法定义如下：
 
@@ -140,6 +140,7 @@ Module :
 ```
 
 ```
+// src/librustc_ast/ast.rs
 #[derive(Clone, Encodable, Decodable, Debug)]
 pub struct Crate {
     pub module: Mod,
@@ -191,6 +192,7 @@ Rust语言enum类型的强大在于其既可包含分类信息，又可包含不
 两者有机组合用来描述Rust语言中Item元素非常的直观和方便，看注释就能大致理解其要表达的内容；
 
 ```
+// src/librustc_ast/ast.rs
 #[derive(Clone, Encodable, Decodable, Debug)]
 pub enum ItemKind {
     /// An `extern crate` item, 
@@ -277,7 +279,7 @@ pub enum ItemKind {
 ```
 
 ---
-##### 6.Rust其他语法
+##### 6.Rust其他语法元素
 Rust语法定义比较多，现简单介绍Rust中比较重要或在其他大部分语言中没有的语法；
 
 ###### A.Function语法
@@ -315,7 +317,7 @@ FunctionReturnType :
 
 ---
 ###### B.Generics语法
-泛化语法由<>组成，其中可以包括lifetime或类型参数；
+泛化语法由<>和泛化参数组成，其中可以包括lifetime或类型参数；
 
 ```
 Syntax
@@ -431,7 +433,7 @@ Pattern :
    | MacroInvocation
 ```
 
-它往往用于变量声明、函数或闭包中参数赋值，这些声明的变量类型可由编译器来推导；
+它往往用于变量声明、函数或闭包中参数赋值，这些声明的变量类型及值绑定可由编译器来推导；
 
 比如已有一个变量值，其类型可以是结构或Tuple类型，
 从该变量的类型中获取指定字段的内容来声明一个新的变量；
@@ -502,7 +504,7 @@ match a {
 
 ---
 #### 二、总结与回顾
-通过前面的分析与解读，学习了Rust语言的语法定义规则，以及示范阅读理解Rust中定义的Crate、Mod、Item元素语法；
+通过前面的分析与解读，学习了Rust语言的语法定义规则，以及示范阅读理解Rust中定义的Crate、Mod、Item语法元素；
 
 ---
 并对Rust语言中Function、Generics、Lifetime、Statement、LetStatement、Pattern等相关语法有了初步认知；
@@ -510,8 +512,8 @@ match a {
 ---
 另外结合代码展示rustc如何实现Rust语言中定义的Crate、Mod、Item语法元素，这样对如何生成整个AST语法树有了更全面的认知，
 
-虽然这里只是抛砖引玉式的解读部分主要语法元素，后续如能进行举一反三式学习与理解其他元素，
-那样就能对AST语法树中每个节点都有更深入的认知与理解；
+虽然这里只是抛砖引玉式的解读部分主要语法元素，后续如能自行进行举一反三式学习与理解其他元素，
+就能对AST语法树中每个节点都有更深入的认知与理解；
 
 
 ---
