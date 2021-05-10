@@ -15,34 +15,41 @@ Rust作为一门新的系统语言，具有高性能、内存安全可靠、高�
 
 LRFRC系列文章尝试从另外一个角度来学习Rust语言，通过了解编译器rustc基本原理来学习Rust语言，以便更好的理解和分析编译错误提示，更快的写出更好的Rust代码。
 
-根据前面[<font color="blue">LRFRC系列:rustc如何生成语法树</font>](http://grainspring.github.io/2021/04/30/lrfrc-rustc-ast/)初步了解rustc由TokenStream生成AST语法树的基本流程，每个AST语法树节点的构成，需要对Rust语言的语法定义有更深入的理解，现对相关内容进行介绍。
+根据前面[<font color="blue">LRFRC系列:rustc如何生成语法树</font>](http://grainspring.github.io/2021/04/30/lrfrc-rustc-ast/)了解了生成AST语法树的基本流程，对于不同AST语法树节点组成细节，需要对Rust语法定义有更深入的理解，现对相关内容进行介绍。
 
 ---
 #### 一、Rust语法
 ##### 1.语法规则基础
-通过对[<font color="blue">LRFRC系列:快速入门rustc编译器概览-生成基础AST></font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#c%E5%88%86%E6%9E%90tokenstream%E7%94%9F%E6%88%90%E5%9F%BA%E7%A1%80ast)一节中介绍的语法规则基础及BNF格式语法有认知之后，需要对Rust语言定义的BNF格式语法进行学习理解，因为所有Rust语言中涉及的概念，首先需要在语法上进行定义，然后才有其在不同上下文中其对应的语义，进而表达Rust语言所写的代码所要实现的含义；
+通过对[<font color="blue">LRFRC系列:快速入门rustc编译器概览-生成基础AST></font>](http://grainspring.github.io/2021/03/16/lrfrc-rustc-preview/#c%E5%88%86%E6%9E%90tokenstream%E7%94%9F%E6%88%90%E5%9F%BA%E7%A1%80ast)一节中介绍的语法规则及BNF格式语法有认知之后，
 
+通过对Rust语言定义的BNF格式语法进行学习理解，这样才能理解Rust语言中涉及的概念；
+
+Rust语言中涉及的概念首先会在语法上进行定义，然后会有它在不同上下文中对应的语义，进而表达Rust代码中所要实现的含义；
+
+---
 ##### 2.Rust基础元素
-在[<font color="blue">LRFRC系列:快速入门Rust语言-Rust语言基础></font>](http://grainspring.github.io/2021/03/09/lrfrc-rust-learn-first/#%E4%BA%8Crust%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80)一节对Rust语言一些基础元素进行介绍，特别是有别于其他语言的一些元素比如:item、crate、mod、trait等，还有一些关键词比如:mut、move、ref、unsafe、let等。
+在[<font color="blue">LRFRC系列:快速入门Rust语言-Rust语言基础></font>](http://grainspring.github.io/2021/03/09/lrfrc-rust-learn-first/#%E4%BA%8Crust%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80)一节对Rust语言中一些基础元素进行介绍，特别是有别于其他语言的一些元素比如:item、crate、mod、trait等，还有一些关键词比如:mut、move、ref、unsafe、let等。
 
 这些语言基础元素，作为Rust语言的一部分，最终会落实到其语法定义中，各个元素具体的语法定义可参考[<font color="blue">Rust语言参考</font>](https://doc.rust-lang.org/stable/reference/)
 
+---
 ##### 3.Rust语法规则描述
 ![rust.grammar.](/imgs/lrfrc.8.grammar.notation.png "rust.grammar")
 
 其中大写的字符，对应一个token；符合驼峰式写法的字符，对应语法单元；小写的字符，对应其字面表达的字符；
 
-使用()来进行分组，?表示可选，*表示零个或多个，+表示至少1个，|表示或者，[]表示其中任意字符
+使用()来进行分组，?表示可选，*表示零个或多个，+表示至少1个，|表示或者，[]表示其中任意字符；
 
-
+---
 ##### 4.Crate和Item语法解读
-由于Rust语言中定义的语法非常多，下面尝试对Item语法的定义进行逐句解读，以便理解Rust语言是如何来定义语法规则；
+由于Rust语言中定义的语法非常多，下面尝试对Crate和Item语法的定义进行逐句解读，以便理解Rust语言是如何来定义语法规则；
 
 对这个基础有理解之后，后续可自行举一反三学习理解其他元素的语法；
 
 其他语法元素的定义请阅览[<font color="blue">Rust语言参考</font>](https://doc.rust-lang.org/stable/reference/)；
 
 Crate语法定义如下：
+
 [<font color="blue">https://doc.rust-lang.org/stable/reference/crates-and-source-files.html</font>](https://doc.rust-lang.org/stable/reference/crates-and-source-files.html)
 
 
@@ -59,8 +66,11 @@ UTF8BOM : \uFEFF
 SHEBANG : #! ~\n+
 ```
 
+---
 Item语法定义如下：
+
 [<font color="blue">https://doc.rust-lang.org/stable/reference/items.html</font>](https://doc.rust-lang.org/stable/reference/items.html)
+
 
 ```
 Syntax:
@@ -92,6 +102,7 @@ MacroItem: //驼峰式写法的MacroItem，对应MacroItem语法单元或语法�
    | MacroRulesDefinition // 或者MacroRulesDefinition语法单元
 ```
 
+---
 ##### 5.Crate和Item语法的实现
 从上面的介绍中可以了解到一个Crate语法单元由可选的内置属性和可选的Item语法单元组成；
 
@@ -103,7 +114,7 @@ MacroItem语法单元由宏调用MacroInvocationSemi或宏规则定义MacroRules
 
 这些Item的定义对应rustc中的实现可见[<font color="blue">如何解析生成item ident和kind</font>](http://grainspring.github.io/2021/04/30/lrfrc-rustc-ast/#6parse_item_kind%E5%A6%82%E4%BD%95%E8%A7%A3%E6%9E%90%E7%94%9F%E6%88%90item-ident%E5%92%8Ckind)相关逻辑；
 
-
+---
 ##### 6.rustc中Crate、Mod、Item的定义
 rustc作为Rust语言的实现者，由对应结构定义来描述相应的语法单元；
 
@@ -114,7 +125,9 @@ rustc中结构体Crate定义与其对应语法Crate中定义稍有不同，其�
 另外这个内建的Mod比较特殊，没有名称，是内建的；
 
 Module语法定义如下：
+
 [<font color="blue">https://doc.rust-lang.org/stable/reference/modules.html</font>](https://doc.rust-lang.org/stable/reference/modules.html)
+
 
 ```
 Syntax:
@@ -262,6 +275,8 @@ pub enum ItemKind {
     MacroDef(MacroDef),
 }
 ```
+
+---
 ##### 6.Rust其他语法
 Rust语法定义比较多，现简单介绍Rust中比较重要或在其他大部分语言中没有的语法；
 
@@ -298,8 +313,9 @@ FunctionReturnType :
 
 块表达式包含内嵌属性及Statemets；
 
+---
 ###### B.Generics语法
-泛化语法由<>组成，其中可以包括lifetime或类型参数
+泛化语法由<>组成，其中可以包括lifetime或类型参数；
 
 ```
 Syntax
@@ -328,6 +344,7 @@ TypeParam :
 fn foo<'a, T>() {}
 ```
 
+---
 ###### C.Lifetime语法
 Lifetime使用'来标识，并且可带上LifetimeBounds，LifetimeBounds由其他Lifetime组成；
 
@@ -362,6 +379,7 @@ fn f<'a, 'b>(x: &'a i32, mut y: &'b i32) where 'a: 'b {
 }
 ```
 
+---
 ###### D.Statement语法
 Statement由;或Item或LetStatement或ExpressionStatement或MacroInvocationSemi组成；
 
@@ -379,6 +397,7 @@ Statement :
    | MacroInvocationSemi
 ```
 
+---
 ###### E.LetStatement语法
 Let语句表示根据Pattern语法来生成变量，并可指定其类型和指定表达式来为其赋值；
 
@@ -388,6 +407,7 @@ LetStatement :
    OuterAttribute* let Pattern ( : Type )? (= Expression )? ;
 ```
 
+---
 ###### F.Pattern语法
 Pattern语法是Rust中最为特殊的一个语法，特别是相对其他语言；
 
@@ -479,24 +499,19 @@ match a {
     Some(ref value) => (),
 }
 ```
+
 ---
 #### 二、总结与回顾
-通过前面的分析与解读，学习了Rust语言的语法定义规则，
-
-以及示范阅读理解Rust中定义的Crate、Mod、Item元素语法；
+通过前面的分析与解读，学习了Rust语言的语法定义规则，以及示范阅读理解Rust中定义的Crate、Mod、Item元素语法；
 
 ---
-并对Rust语言中Function、Generics、Lifetime、Statement、LetStatement、
-Pattern等相关语法有了初步认知；
+并对Rust语言中Function、Generics、Lifetime、Statement、LetStatement、Pattern等相关语法有了初步认知；
 
 ---
-另外结合代码展示rustc如何实现Rust语言中定义的Crate、Mod、Item语法元素，
+另外结合代码展示rustc如何实现Rust语言中定义的Crate、Mod、Item语法元素，这样对如何生成整个AST语法树有了更全面的认知，
 
-这样对如何生成整个AST语法树有了更全面的认知，
-
-虽然只是解读了部分主要语法元素，相信后续如能进行举一反三式学习与理解其他元素，
-
-定能对AST语法树中每个节点都会有更深入的认知与理解；
+虽然这里只是抛砖引玉式的解读部分主要语法元素，后续如能进行举一反三式学习与理解其他元素，
+那样就能对AST语法树中每个节点都有更深入的认知与理解；
 
 
 ---
