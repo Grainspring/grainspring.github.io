@@ -189,7 +189,7 @@ rustc使用enum来描述不同的Item类型，统一语法元素VisItem和MacroI
 
 Rust语言enum类型的强大在于其既可包含分类信息，又可包含不同子字段及其值；
 
-两者有机组合用来描述Rust语言中Item元素非常的直观和方便，看注释就能大致理解其要表达的内容；
+两者有机组合用来描述Rust语言中ItemKind元素非常的直观和方便，看注释就能大致理解其要表达的内容；
 
 ```
 // src/librustc_ast/ast.rs
@@ -317,7 +317,7 @@ FunctionReturnType :
 
 ---
 ###### B.Generics语法
-泛化语法由<>和泛化参数组成，其中可以包括lifetime或类型参数；
+泛化语法由<>和泛化参数组成，其中可以包括Lifetime或类型参数；
 
 ```
 Syntax
@@ -350,7 +350,7 @@ fn foo<'a, T>() {}
 ###### C.Lifetime语法
 Lifetime使用'来标识，并且可带上LifetimeBounds，LifetimeBounds由其他Lifetime组成；
 
-其中'static代表全局静态lifetime和'_代表无论什么lifetime都可以；
+其中'static代表全局静态Lifetime和'_代表无论什么Lifetime都可以；
 
 ```
 Lexer
@@ -376,8 +376,8 @@ Lifetime :
 ```
 // 示例
 fn f<'a, 'b>(x: &'a i32, mut y: &'b i32) where 'a: 'b {
-    y = x;                      // &'a i32 is a subtype of &'b i32 because 'a: 'b
-    let r: &'b &'a i32 = &&0;   // &'b &'a i32 is well formed because 'a: 'b
+    y = x;// &'a i32 is a subtype of &'b i32 because 'a: 'b
+    let r: &'b &'a i32 = &&0;// &'b &'a i32 is well formed because 'a: 'b
 }
 ```
 
