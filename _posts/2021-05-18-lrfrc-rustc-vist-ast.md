@@ -16,12 +16,12 @@ Rust作为一门新的系统语言，具有高性能、内存安全可靠、高�
 LRFRC系列文章尝试从另外一个角度来学习Rust语言，通过了解编译器rustc基本原理来学习Rust语言，以便更好的理解和分析编译错误提示，更快的写出更好的Rust代码。
 
 根据前面[<font color="blue">LRFRC系列:rustc如何生成语法树</font>](http://grainspring.github.io/2021/04/30/lrfrc-rustc-ast/)及
-[<font color="blue">LRFRC系列:深入理解Rust主要语法</font>](http://grainspring.github.io/2021/05/10/lrfrc-rustc-grammar/)对生成语法树的流程和构成主要语法单元的规则及定义有了认知之后，对生成语法树有了全面深入的理解，后续rustc会进入下一阶段，对语法树进行各种处理，其中如何遍历语法树对编译器来讲非常重要，因为它是编译器如何将代码有效转换成对应机器码的基础，现对rustc如何实现遍历AST语法树进行解读。
+[<font color="blue">LRFRC系列:深入理解Rust主要语法</font>](http://grainspring.github.io/2021/05/10/lrfrc-rustc-grammar/)对生成语法树的流程和构成主要语法单元的规则及定义有了认知之后，对生成语法树有了全面深入的理解，后续rustc会进入下一阶段，对语法树进行各种处理，其中如何遍历语法树对编译器来讲非常重要，因为它是编译器如何将代码有效转换成对应机器码的基础，现对rustc如何实现遍历访问AST语法树进行解读。
 
 ---
 #### 一、Visitor设计模式
 ##### 1.Visitor模式特点及应用场景
-Vistor设计模式作为基础的设计模式之一，已广泛引用于不同的软件设计之中，其主要特点及应用场景如下：
+Vistor设计模式作为基础的设计模式之一，已广泛应用于不同的软件设计之中，其主要特点及应用场景如下：
 
 数据结构与算法分离，有多种不同类型的算法或操作应用于同一个数据结构及其子结构；
 
@@ -29,9 +29,9 @@ Vistor设计模式作为基础的设计模式之一，已广泛引用于不同�
 
 将不同类型的算法/操作通称为Vistor，它提供不同visit_xx的方法来定义和实现如何访问或操作指定数据结构及其子结构；
 
-一个数据结构和其子结构提供accept/walk方法来接受某个Visitor的访问，其实现逻辑为根据自身结构及状态调用Visitor提供的对应自身的visit_xx方法和对应其子结构的visit_xx方法；
+一个数据结构和其子结构提供accept/walk方法来接受某个Visitor的访问，其实现逻辑为根据自身结构及状态调用Visitor提供的对应自身的visit_xx方法或对应其子结构的visit_xx方法；
 
-通过Visitor模式可实现数据结构与算法解藕，不同数据结构对不同算法的处理会分散在不同Visitor的visit_**中实现，使用数据结构accept/walk方法来触发本身和子结构接收某个Visitor的访问；
+通过Visitor模式可实现数据结构与算法解藕，不同数据结构对不同算法的处理会分散在不同Visitor的visit_**中实现，使用数据结构accept/walk方法来触发本身和子结构接收某个Visitor的遍历访问；
 
 一个传统的访问文件及目录名称的类图参考如下：
 ![file_visitor_design.](/imgs/lrfrc_visitor_design.png "file visitor design")
@@ -175,12 +175,12 @@ pub trait Visitor<'ast>: Sized {
 ```
 
 ---
-##### 2.Visitor缺省实现遍历Crate、Mode、Item
-Vistor缺省实现遍历Crate和Mod、Item如下，遍历其他语法元素可自行作对应分析及使用；
+##### 2.walk_xx泛化方法提供遍历访问Crate、Mod、Item等元素
+现介绍walk_crate、walk_mod、walk_item泛化方法如何实现遍历访问Crate、Mod、Item元素，其他遍历访问方法可自行作类似分析与参考；
 
 其中与面向对象的语言中实现Visitor模式时需要实现不同类型的accept方法不同的地方在于:
 
-rustc中使用带有泛化参数Visitor的泛化方法来实现walk_xx，类似于传统抽象工厂方法的模式，
+rustc中使用带有泛化参数Visitor的泛化方法walk_xx来实现类似功能，类似于传统抽象工厂方法的模式，
 这样这些方法可以作用于不同的Visitor实例，同时无须将其遍历的逻辑嵌入到被遍历的结构体中；
 
 
@@ -385,11 +385,13 @@ impl<'a> AstValidator<'a> {
     fn err_handler(&self) -> &rustc_errors::Handler {
         &self.session.diagnostic()
     }
+    // 省略其他部分方法
+}
 ```
 
 ---
 ###### C.AstValidator重载Visitor中部分方法
-AstValidator重载改写Visitor中部分缺省方法的实现，以实现其需要实现的算法--检查语法树是否有效，
+AstValidator实现了Visitor trait，可以继承其定义的visit_xx方法，同时重载改写Visitor中部分方法的实现，以实现其需要实现的算法--检查语法树是否有效，
 比如：visit_attribute、visit_expr、visit_ty、visit_fn等
 
 ```
