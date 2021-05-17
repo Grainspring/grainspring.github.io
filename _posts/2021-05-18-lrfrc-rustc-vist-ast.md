@@ -16,34 +16,42 @@ Rust作为一门新的系统语言，具有高性能、内存安全可靠、高�
 LRFRC系列文章尝试从另外一个角度来学习Rust语言，通过了解编译器rustc基本原理来学习Rust语言，以便更好的理解和分析编译错误提示，更快的写出更好的Rust代码。
 
 根据前面[<font color="blue">LRFRC系列:rustc如何生成语法树</font>](http://grainspring.github.io/2021/04/30/lrfrc-rustc-ast/)及
-[<font color="blue">LRFRC系列:深入理解Rust主要语法</font>](http://grainspring.github.io/2021/05/10/lrfrc-rustc-grammar/)对生成语法树的流程和构成主要语法单元的规则及定义有了认知之后，对生成语法树有了全面深入的理解，后续rustc会进入下一阶段，对语法树进行各种处理，其中如何遍历语法树对编译器来讲非常重要，因为它是编译器如何将代码有效转换成对应机器码的基础，现对rustc如何使用Rust语言实现Vistor模式来遍历AST语法树。
+[<font color="blue">LRFRC系列:深入理解Rust主要语法</font>](http://grainspring.github.io/2021/05/10/lrfrc-rustc-grammar/)对生成语法树的流程和构成主要语法单元的规则及定义有了认知之后，对生成语法树有了全面深入的理解，后续rustc会进入下一阶段，对语法树进行各种处理，其中如何遍历语法树对编译器来讲非常重要，因为它是编译器如何将代码有效转换成对应机器码的基础，现对rustc如何实现遍历AST语法树进行解读。
 
 ---
 #### 一、Visitor设计模式
 ##### 1.Visitor模式特点及应用场景
 Vistor设计模式作为基础的设计模式之一，已广泛引用于不同的软件设计之中，其主要特点及应用场景如下：
 
-数据结构与算法分离，有多种不同类型的算法或操作应用于同一个数据结构及其子结构；同一个数据结构与其子结构的状态及相互之间的关系与不同算法/操作无直接关联和依赖；将不同类型的算法/操作通称为Vistor，它提供不同visit_xx的方法来定义和实现如何访问或操作指定数据结构及其子结构；一个数据结构和其子结构提供accept/walk方法来接受某个Visitor的访问，其实现逻辑为根据自身结构及状态调用Visitor提供的对应自身的visit_xx方法和对应其子结构的visit_xx方法；
+数据结构与算法分离，有多种不同类型的算法或操作应用于同一个数据结构及其子结构；
 
-通过Visitor模式可实现数据结构与算法解藕，不同数据结构对不同算法的处理会分散在不同的visit_**中实现，使用数据结构accept/walk方法来触发本身和子结构接收某个Visitor的访问；
+同一个数据结构与其子结构的状态及相互之间的关系与不同算法/操作无直接关联和依赖；
 
-一个基础的访问文件及目录名称的java类图参考如下：
+将不同类型的算法/操作通称为Vistor，它提供不同visit_xx的方法来定义和实现如何访问或操作指定数据结构及其子结构；
+
+一个数据结构和其子结构提供accept/walk方法来接受某个Visitor的访问，其实现逻辑为根据自身结构及状态调用Visitor提供的对应自身的visit_xx方法和对应其子结构的visit_xx方法；
+
+通过Visitor模式可实现数据结构与算法解藕，不同数据结构对不同算法的处理会分散在不同Visitor的visit_**中实现，使用数据结构accept/walk方法来触发本身和子结构接收某个Visitor的访问；
+
+一个传统的访问文件及目录名称的类图参考如下：
 ![file_visitor_design.](/imgs/lrfrc_visitor_design.png "file visitor design")
 
 
 ---
 ##### 2.Visitor模式应用在遍历语法树
 为啥需要遍历语法树呢？语法树生成后，要有效的分析语法树往往需要在整颗语法树中进行检查或搜索；
-比如：检查某颗语法树中所有属性是否合法，是否存在新定义的属性；从整个语法树中搜索某个表达式中使用到的标识符，以确定其为何种类型；
+
+比如：检查某颗语法树中所有属性是否合法，是否存在新定义的属性；从整个语法树中搜索某个表达式中使用到的标识符，以确定其定义；
 验证语法树各节点在更大范围内是否有效；遍历语法树生成更高级的中间描述hir或mir；
 
-由于各种遍历需求或算法会可能非常多，并且相互之间或不存在依赖关系，执行的先后顺序未必有严格关系，其相同的共性在于作用于同一语法树，显然将这些算法实现在语法树节点的struct或enum中是不合适的；根据前面提到的Visitor设计模式特点，按照Visitor模式来实现遍历语法树是最合适不过的；
+由于各种遍历需求或算法会可能非常多，并且相互之间或不存在依赖关系，执行的先后顺序未必有严格关系，其相同的共性在于作用于同一语法树，显然将这些算法实现在语法树节点的struct或enum中是不合适的；
+
+根据前面提到的Visitor设计模式特点，按照Visitor模式来实现遍历语法树是最合适不过的；
 
 ---
 #### 二、rustc中遍历语法树
-虽然Rust语言中没有java/c++等类及接口的定义，但其有trait，下面来看看rustc如何使用Rust语言来实现Visitor模式，进而达到遍历语法树的目的；
+虽然Rust语言中没有java/c++等类及接口的定义，但其有trait，下面来看看rustc如何使用Rust语言特性来实现Visitor模式，进而达到遍历语法树的目的；
 
----
 ##### 1.trait Visitor定义
 对语法树进行遍历的操作或算法的种类非常多，但语法树的语法元素及结构相对固定，将遍历这些语法元素的共同功能抽象到一个trait Visitor，不同类型的操作或算法通过重载实现trait Visitor提供的缺省功能以达到其自身对应功能；
 
@@ -53,71 +61,80 @@ Sized代表一个编译阶段可确定内存布局大小的trait，非动态大�
 
 Visitor针对所有不同语法树节点类型提供不同的方法，比如visit_ident接收类型Ident参数、visit_mod接收&'ast Mod参数；
 
-并提供对应缺省实现，Visitor trait的实现者可以重载改写对应实现；
+Visitor提供对应缺省实现，Visitor trait的实现者可以重载改写对应实现；
 
 trait Vistor定义如下：
 
 ```
 // src/librustc_ast/visit.rs
-
 pub trait Visitor<'ast>: Sized {
+    // 访问name
     fn visit_name(&mut self, _span: Span, _name: Symbol) {
         // Nothing to do.
     }
+    // 访问标识符，调用walk_ident遍历标识符
     fn visit_ident(&mut self, ident: Ident) {
         walk_ident(self, ident);
     }
+    // 访问mod，调用walk_mod遍历mod元素
     fn visit_mod(&mut self, m: &'ast Mod, _s: Span
         , _attrs: &[Attribute], _n: NodeId) {
         walk_mod(self, m);
     }
     // 省略部分方法
+    // 访问item，调用walk_item遍历item元素
     fn visit_item(&mut self, i: &'ast Item) {
         walk_item(self, i)
     }
+    // 访问本地变量，调用walk_local遍历local元素
     fn visit_local(&mut self, l: &'ast Local) {
         walk_local(self, l)
     }
+    // 访问块，调用walk_block遍历block元素
     fn visit_block(&mut self, b: &'ast Block) {
         walk_block(self, b)
     }
+    // 访语句问本地变量，调用walk_stmt遍历stmt元素
     fn visit_stmt(&mut self, s: &'ast Stmt) {
         walk_stmt(self, s)
     }
+    // 访问参数，调用walk_param遍历param元素
     fn visit_param(&mut self, param: &'ast Param) {
         walk_param(self, param)
     }
-
+    // 访问patten，调用walk_pat遍历pat元素
     fn visit_pat(&mut self, p: &'ast Pat) {
         walk_pat(self, p)
     }
-
+    // 访问表达式，调用walk_expr遍历expr元素
     fn visit_expr(&mut self, ex: &'ast Expr) {
         walk_expr(self, ex)
     }
-
+    // 访问类型，调用walk_ty遍历ty元素
     fn visit_ty(&mut self, t: &'ast Ty) {
         walk_ty(self, t)
     }
-
+    // 访问泛化，调用walk_generics遍历generics元素
     fn visit_generics(&mut self, g: &'ast Generics) {
         walk_generics(self, g)
     }
-
+    // 访问函数，调用walk_fn遍历fn元素
     fn visit_fn(&mut self, fk: FnKind<'ast>, s: Span, _: NodeId) {
         walk_fn(self, fk, s)
     }
-
+    // 访问trait，调用walk_trait_ref遍历trait元素
     fn visit_trait_ref(&mut self, t: &'ast TraitRef) {
         walk_trait_ref(self, t)
     }
-
+    // 访问变体结构数据，调用walk_strut_def遍历variantdata元素
     fn visit_variant_data(&mut self, s: &'ast VariantData) {
         walk_struct_def(self, s)
     }
+    // 访问变体结构字段，调用walk_strut_field遍历structfield元素
     fn visit_struct_field(&mut self, s: &'ast StructField) {
         walk_struct_field(self, s)
     }
+    // 访问enum，调用walk_enum_def遍历enum_definition元素
     fn visit_enum_def(
         &mut self,
         enum_definition: &'ast EnumDef,
@@ -127,53 +144,37 @@ pub trait Visitor<'ast>: Sized {
     ) {
         walk_enum_def(self, enum_definition, generics, item_id)
     }
-    fn visit_variant(&mut self, v: &'ast Variant) {
-        walk_variant(self, v)
-    }
-    fn visit_label(&mut self, label: &'ast Label) {
-        walk_label(self, label)
-    }
+    // 访问lifetime，调用walk_lifetime遍历lifetime元素
     fn visit_lifetime(&mut self, lifetime: &'ast Lifetime) {
         walk_lifetime(self, lifetime)
     }
-    fn visit_mac(&mut self, _mac: &'ast MacCall) {
-        panic!("visit_mac disabled by default");
-    }
+    // 访问宏定义
     fn visit_mac_def(&mut self, _mac: &'ast MacroDef, _id: NodeId) {
         // Nothing to do
     }
+    // 访问路径，调用walk_path遍历path元素
     fn visit_path(&mut self, path: &'ast Path, _id: NodeId) {
         walk_path(self, path)
     }
-    fn visit_use_tree(&mut self, use_tree: &'ast UseTree
-        , id: NodeId, _nested: bool) {
-        walk_use_tree(self, use_tree, id)
-    }
-
+    // 访问属性，调用walk_attribute遍历attribute元素
     fn visit_attribute(&mut self, attr: &'ast Attribute) {
         walk_attribute(self, attr)
     }
+    // 访问TokenTree，调用walk_tt遍历tokentree元素
     fn visit_tt(&mut self, tt: TokenTree) {
         walk_tt(self, tt)
     }
+    // 访问TokenStream，调用walk_tt遍历tokenstream元素
     fn visit_tts(&mut self, tts: TokenStream) {
         walk_tts(self, tts)
     }
+    // 访问Token
     fn visit_token(&mut self, _t: Token) {}
-    fn visit_vis(&mut self, vis: &'ast Visibility) {
-        walk_vis(self, vis)
-    }
-    fn visit_fn_ret_ty(&mut self, ret_ty: &'ast FnRetTy) {
-        walk_fn_ret_ty(self, ret_ty)
-    }
-
-    fn visit_field(&mut self, f: &'ast Field) {
-        walk_field(self, f)
-    }
     // 省略部分其他方法
 }
 ```
 
+---
 ##### 2.Visitor缺省实现遍历Crate、Mode、Item
 Vistor缺省实现遍历Crate和Mod、Item如下，遍历其他语法元素可自行作对应分析及使用；
 
@@ -308,10 +309,10 @@ pub fn walk_item<'a, V: Visitor<'a>>(visitor: &mut V, item: &'a Item) {
 
 了解了验证语法树的实现方式，对了解其他类似算法的实现有很大的参考作用；
 
----
-###### A.AstValidator的定义
+###### A.AstValidator定义
 一个AstValidator结构体用来遍历验证AST语法树，它提供一些可选的验证参数等；
 其中包含一个Session引用，它其中往往包含构建出来的AST语法树；
+
 AstValidator定义中包含lifetime 'a对应标示session的生命周期；
 
 ```
