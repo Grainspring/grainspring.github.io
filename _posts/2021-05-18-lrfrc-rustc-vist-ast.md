@@ -3,7 +3,7 @@ layout: post
 title:  "LRFRC系列:rustc如何实现遍历访问语法树"
 date:   2021-05-18 08:06:06
 categories: Rust LRFRC AST
-excerpt: 学习Rust,分词,rustc,AST,语法树
+excerpt: 学习Rust,分词,rustc,AST,语法树,Visitor模式
 ---
 
 * content
@@ -21,13 +21,13 @@ LRFRC系列文章尝试从另外一个角度来学习Rust语言，通过了解�
 ---
 #### 一、Visitor设计模式
 ##### 1.Visitor模式特点及应用场景
-Vistor设计模式作为基础的设计模式之一，已广泛应用于不同的软件设计之中，其主要特点及应用场景如下：
+Visitor设计模式作为基础的设计模式之一，已广泛应用于不同的软件设计之中，其主要特点及应用场景如下：
 
 数据结构与算法分离，有多种不同类型的算法或操作应用于同一个数据结构及其子结构；
 
 同一个数据结构与其子结构的状态及相互之间的关系与不同算法/操作无直接关联和依赖；
 
-将不同类型的算法/操作通称为Vistor，它提供不同visit_xx的方法来定义和实现如何访问或操作指定数据结构及其子结构；
+将不同类型的算法/操作通称为Visitor，它提供不同visit_xx的方法来定义和实现如何访问或操作指定数据结构及其子结构；
 
 一个数据结构和其子结构提供accept/walk方法来接受某个Visitor的访问，其实现逻辑为根据自身结构及状态调用Visitor提供的对应自身的visit_xx方法或对应其子结构的visit_xx方法；
 
@@ -63,7 +63,7 @@ Visitor针对所有不同语法树节点类型提供不同的方法，比如visi
 
 Visitor提供对应缺省实现，Visitor trait的实现者可以重载改写对应实现；
 
-trait Vistor定义如下：
+trait Visitor定义如下：
 
 ```
 // src/librustc_ast/visit.rs
