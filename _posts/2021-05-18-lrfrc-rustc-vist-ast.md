@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "LRFRC系列:如何遍历语法树"
+title:  "LRFRC系列:rustc如何实现遍历访问语法树"
 date:   2021-05-18 08:06:06
 categories: Rust LRFRC AST
 excerpt: 学习Rust,分词,rustc,AST,语法树
@@ -49,13 +49,13 @@ Vistor设计模式作为基础的设计模式之一，已广泛引用于不同�
 根据前面提到的Visitor设计模式特点，按照Visitor模式来实现遍历语法树是最合适不过的；
 
 ---
-#### 二、rustc中遍历语法树
-虽然Rust语言中没有java/c++等类及接口的定义，但其有trait，下面来看看rustc如何使用Rust语言特性来实现Visitor模式，进而达到遍历语法树的目的；
+#### 二、rustc实现遍历访问语法树
+虽然Rust语言中没有java/c++等类及接口的定义，但其有trait，下面来看看rustc如何使用Rust语言特性来实现Visitor模式，进而达到遍历访问语法树的目的；
 
 ##### 1.trait Visitor定义
 对语法树进行遍历的操作或算法的种类非常多，但语法树的语法元素及结构相对固定，将遍历这些语法元素的共同功能抽象到一个trait Visitor，不同类型的操作或算法通过重载实现trait Visitor提供的缺省功能以达到其自身对应功能；
 
-由于trait Visitor要访问语法树中各个节点，其中可能会使用对各个节点的引用，并且语法树及节点的生命周期跟实现Visitor trait的对象的生命周期没有直接关系，这样Visitor定义中需要使用lifetime 'ast，来标示其中会引用到的语法树及节点的生命周期，用泛化语法来定义；
+由于trait Visitor要访问语法树中各个节点，其中可能会使用对各个节点的引用，并且语法树及节点的生命周期跟实现Visitor trait的对象的生命周期没有直接关系，这样Visitor定义中需要使用lifetime 'ast来标示其中会引用到的语法树及节点的生命周期，并用泛化语法来定义；
 
 Sized代表一个编译阶段可确定内存布局大小的trait，非动态大小的trait；
 
@@ -304,10 +304,10 @@ pub fn walk_item<'a, V: Visitor<'a>>(visitor: &mut V, item: &'a Item) {
 ```
 
 ---
-##### 3.使用Visitor实现验证语法树
-验证语法树作为遍历语法树中的一个基本算法，现介绍如何基于Visitor模式来实现语法验证；
+##### 3.使用Visitor实现遍历验证语法树
+遍历验证语法树作为遍历语法树中的一个基本操作或算法，现介绍如何基于Visitor模式来实现语法验证；
 
-了解了验证语法树的实现方式，对了解其他类似算法的实现有很大的参考作用；
+了解了遍历验证语法树的实现方式，对了解其他类似算法的实现有很大的参考作用；
 
 ###### A.AstValidator定义
 一个AstValidator结构体用来遍历验证AST语法树，它提供一些可选的验证参数等；
@@ -458,7 +458,7 @@ pub fn check_crate(session: &Session, krate: &Crate, lints: &mut LintBuffer) -> 
         is_assoc_ty_bound_banned: false,
         lint_buffer: lints,
     };
-    // 调用泛化方法walk_crate从语法树根krate开始遍历
+    // 调用泛化方法walk_crate从语法树根krate开始遍历验证
     visit::walk_crate(&mut validator, krate);
 
     validator.has_proc_macro_decls
@@ -466,14 +466,14 @@ pub fn check_crate(session: &Session, krate: &Crate, lints: &mut LintBuffer) -> 
 ```
 
 ---
-#### 二、总结与回顾
+#### 三、总结与回顾
 通过前面的分析与解读，学习了传统遍历树结构的Visitor设计模式及特点，重点介绍了rustc中如何抽象定义Visitor及walk相关泛化方法；
 
 并以AstValidator为示例更深入理解rustc如何利用Visitor设计模式来实现对语法树的遍历检查验证；
 
-其中涉及Rust语言trait的定义、方法重载、泛化方法的使用等，以便更好理解其特性及其使用，并与其他高级语言类似特性做了一定的对比；
+其中涉及Rust语言trait的定义、方法重载、泛化方法的使用等，以便更好理解其特性及其使用，并与其他高级语言类似特性做了一定的对比，有没有觉得使用泛化和trait实现Visitor模式中的数据结构和算法分离更加直观和彻底；
 
-遍历语法树作为编译器中一个常用的基础逻辑，使用范围非常广，通过这一节的学习，可举一反三式学习与理解其他的遍历语法树的算法实现；
+遍历语法树作为编译器中一个常用的基础逻辑，使用范围非常广，通过这一节的学习，可举一反三式学习与理解其他的遍历访问语法树算法的实现；
 
 ---
 参考
