@@ -2,7 +2,7 @@
 layout: post
 title:  "LRFRC系列:全面理解Rust宏"
 date:   2021-05-28 22:08:06
-categories: Rust LRFRC AST 宏
+categories: Rust LRFRC AST
 excerpt: 学习Rust,宏,rustc,AST,语法树
 ---
 
@@ -28,7 +28,7 @@ Rust语言作为一门独特的系统语言，设计了强大的宏来解决语�
 用已有的语法元素来描述一段逻辑比较复杂和不灵活的场景，也可以使用宏调用来实现则更直观和灵活比如：使用一组文字量来初始化定义数组vec或map、json结构等；
 
 ```
-let v2 = vec![1, 2, 3];
+let v1 = vec![1, 2, 3];
 let v2 = vec!['a', 'b', 'c']; 
 ```
 
@@ -395,7 +395,7 @@ m!{} // 外部crate宏已导入到当前crate
 
 其对应函数声明中的输出是proc_macro crate中定义的TokenStream，字面上的代码串可以通过parse方法来生成；
 
-类似函数的过程宏，使用时类似函数调用方式，传入代码片段，调用后的输出结果会替换调用过程宏这个语法元素，类似简易宏调用；
+类似函数的过程宏，使用时简易宏调用方式，传入代码片段，调用后的输出结果会替换调用过程宏这个语法元素；
 
 类似函数的过程宏的名称与对应的函数声明一致，它可应用在任何简易宏可被调用的地方；
 
@@ -418,7 +418,7 @@ pub fn make_answer(_item: TokenStream) -> TokenStream {
 extern crate proc_macro_examples;
 use proc_macro_examples::make_answer;
 
-make_answer!(); // 类似函数简易宏的调用
+make_answer!(); // 类似函数过程宏的调用
 
 fn main() {
     println!("{}", answer());// 直接调用过程宏输出的fn answer
@@ -543,7 +543,7 @@ fn invoke3() {}
 对初学者来讲，Rust中宏的概念会比较多，理解和使用起来会觉得比较复杂，期望通过本文的解读能加深对其理解；
 
 ---
-从宏本身来讲，比如简易宏中这么多中的语法类型，如果混合结合在一起定义或使用，往往会加大其复杂度；
+从宏本身来讲，比如简易宏中这么多种的语法类型，如果混合结合在一起定义或使用，往往会加大其复杂度；
 值得庆幸的是，rustc编译器对它们之间一些组合应用是否会导致歧义的产生，已定义有一些规则来检查与判断，以减轻开发者的判断；
 
 ---
