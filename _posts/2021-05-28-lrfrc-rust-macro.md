@@ -81,7 +81,7 @@ println!("hello lrfrc");
 ###### C.简易宏与过程宏区别
 简易宏与过程宏定义和调用上有很大的区别，现从下面几个方面进行比较说明；
 
-- **C1.定义方式的区别**
+**C1.定义方式的区别**
 
 前者通过Rust语言语法macro_rules! macro_name {}方式来定义、实现匹配转译替换字面上的代码输入，宏定义的逻辑编译后存在于当前crate中，编译器在编译其他crate使用到该crate的简易宏时，编译器会自动加载被调用的crate中的宏逻辑来实现转译替换逻辑；
 
@@ -90,7 +90,7 @@ println!("hello lrfrc");
 编译器编译这个特殊的proc-macro crate时，它会生成一个动态库，并导出相关过程宏对应的Rust函数；
 
 ---
-- **C2.调用方式的区别**
+**C2.调用方式的区别**
 
 编译器在编译其他crate引用到过程宏时，编译器会将字面上的代码生成TokenStream对象，并动态搜索和加载过程宏对应的动态库，然后调用对应的过程宏Rust函数，将其输出的TokenStream对象转换成编译器内部的AST语法树节点；
 
@@ -99,7 +99,7 @@ println!("hello lrfrc");
 而简易宏定义和调用时，编译器会使用类似正则表达式的方式，来匹配字面上的代码并替换字面上的代码，生成新的字面上的代码，然后再进行解析生成语法树节点；
 
 ---
-- **C3.与crate中其他语法元素关系**
+**C3.与crate中其他语法元素关系**
 
 包含过程宏定义的crate不会被链接到使用它的crate中，它往往只会被编译器动态调用，这个crate往往不要包括需要链接到开发者lib或bin的其他Rust语言元素比如fn、trait等；
 
@@ -169,6 +169,7 @@ MacroTranscriber :
    DelimTokenTree
 ```
 
+---
 ###### B.Meta变量及其类型
 Rust简易宏强大和难以让人理解的地方就在于其Meta变量以及其类型；
 
@@ -178,7 +179,10 @@ Rust简易宏强大和难以让人理解的地方就在于其Meta变量以及其
 熟悉前面一系列[<font color="blue">LRFRC系列:rustc如何生成语法树</font>](http://grainspring.github.io/2021/04/30/lrfrc-rustc-ast/)和[<font color="blue">LRFRC系列:深入理解Rust主要语法</font>](http://grainspring.github.io/2021/05/10/lrfrc-rustc-grammar/)文章的同学，对这些类型block、expr等似曾相识，其实这些类型跟编译器内部解析器生成的语法树节点的类型类似；
 
 具体每种类型对应的含义，可参考相关资料；
+
+
 ![macro.fragspec](/imgs/lrfrc.9.macro.fragspec.png "macro.fragspec")
+
 
 整个Meta变量及其类型生成和使用流程大体如下：
 在将字面上的代码即宏传入参数，进行简易分词和解析后生成一个语法片段，其中包含解析出来的不同类型和对应值，
@@ -223,6 +227,7 @@ fn main() {
 }
 ```
 
+---
 ###### C.Meta变量重复
 为了便于简化表达重复的具有相同类型的Meta变量，简易宏中使用特别符号来描述相关规则；
 
@@ -250,6 +255,7 @@ fn main() {
 }
 ```
 
+---
 ###### D.Meta变量$crate
 从逻辑上来讲，简易宏调用时传入的字面上代码片段，分词解析后不会有crate类型；
 
@@ -268,6 +274,8 @@ macro_rules! thd_name {
     }};
 }
 ```
+
+---
 ###### E.简易宏可见范围
 结合前面说明，简易宏的定义属于一个Item，并且宏的定义可以在一个crate，而调用宏可以在另一个不同的crate中；
 
@@ -350,6 +358,7 @@ fn foo() {
 // m!(); // 错误: 宏m不在当前代码块范围中定义.
 ```
 
+---
 ###### F.简易宏导入导出
 如果只有上面介绍的简易宏可见范围，那么简易宏使用起来往往不太方便，于是引入导出#[macro_export]和导入#[macro_use]的用法；
 
@@ -389,6 +398,7 @@ m!{} // 外部crate宏已导入到当前crate
 // self::m!{} // 错误: m没有在`self`中定义
 ```
 
+---
 ##### 2.类似函数的过程宏
 其对应函数声明中的输入参数item是proc_macro crate中定义的TokenStream，由调用时传递过来的字面上的代码生成，其类型类似与前面介绍的语法树中[<font color="blue">TokenStream</font>](http://grainspring.github.io/2021/04/18/lrfrc-rustc-tokenstream-and-closure/#9tokentree%E5%92%8Ctokenstream);
 
