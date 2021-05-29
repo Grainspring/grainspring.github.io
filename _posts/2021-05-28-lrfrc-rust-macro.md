@@ -255,16 +255,15 @@ fn main() {
 
 至于这个ident_name能否在调用的crate中可见，需要使用者额外声明，简易宏中只是表示对该标识符的引用；
 
+```
 // 宏thd_name会使用当前宏定义crate中的get_tag_from_thread_name方法
 #[macro_export]
 macro_rules! thd_name {
     ($name:expr) => {{
-        $crate::get_tag_from_thread_name()
-            .map(|tag| format!("{}::{}", $name, tag))
-            .unwrap_or_else(|| $name.to_owned())
+        $crate::get_tag_from_thread_name($name);
     }};
 }
-
+```
 ###### E.简易宏可见范围
 结合前面说明，简易宏的定义属于一个Item，并且宏的定义可以在一个crate，而调用宏可以在另一个不同的crate中；
 
