@@ -289,6 +289,7 @@ pub struct Resolver<'a> {
 ---
 ##### 3.名称解析核心流程
 整个名称解析大致逻辑为：
+
 A.调用expand_crate时触发fully_expand_fragment，为AST树每个节点生成唯一NodeId；
 
 fully_expand_fragment先调用collect_invocations，在收集所有宏调用的过程中为AST树节点生成唯一NodeId; 
@@ -313,9 +314,12 @@ pub fn next_node_id(&mut self) -> NodeId {
     self.next_node_id
 }
 ```
+
 B.fully_expand_fragment调用visit_ast_fragment_with_placeholders，触发build_reduced_graph；
+
   它先集中collect_definitions，其中会使用DefCollector作为Visitor来遍历调用create_def，
   生成新的local_def_id，并建立与NodeId的关联；
+
   它然后使用BuildReducedGraphVisitor作为Visitor来遍历AstFragment，visit_with时会根据AST树节点
   在Resolver对象中创建子Module，并通过调用define/try_define为不同Module的ident设置NameResolution；
 
@@ -483,7 +487,8 @@ impl<'a, 'b> Visitor<'b> for BuildReducedGraphVisitor<'a, 'b> {
     }
 ```
 
-C.resolve_crate调用late_resolve_crate，其中会使用LateResolutionVisitor来遍历Crate，
+C.resolve_crate调用late_resolve_crate，其中会使用LateResolutionVisitor来遍历Crate；
+
   其中会尝试resolve_item等，如果遇到需要resolve某个ident时，它会使用前面第2步生成的NameResolution，
   查看是否能找到有效的绑定，如果不能则提示编译错误；
 
