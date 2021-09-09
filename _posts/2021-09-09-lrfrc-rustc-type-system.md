@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "LRFRC系列:Rust类型系统实现基础"
+title:  "LRFRC系列:解读Rust类型系统的实现"
 date:   2021-09-09 18:06:05
 categories: Rust LRFRC
 excerpt: 学习Rust
