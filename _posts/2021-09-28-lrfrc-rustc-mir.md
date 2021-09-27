@@ -23,19 +23,22 @@ learn rust from rustc(LRFRC)系列文章尝试从另外一个角度来学习Rust
 ##### 1.MIR简介
 在[<font color="blue">Introducing MIR</font>](https://blog.rust-lang.org/2016/04/19/MIR.html)中详细介绍了为啥引进MIR(Mid-level IR)和其实现特点，编译器实现对MIR的支持极大促进Rust语言的发展，带来更快的编译速度、代码执行速度、更精准的类型检查和借用检查，帮助Rust语言及生态实现突破性的成长；
 
-![mir-basic](/imgs/mir-basic "mir-basic")
+![mir-basic](/imgs/mir-basic.png "mir-basic")
 
 作为一种面向类型完整、安全借用检查、性能优化的中间描述，使用简易的数据结构，以实现从面向开发者结构化的HIR到面向底层LLVM IR的转换，从而以MIR为中心来实现Rust语言独特的类型系统、借用检查、所有权等特性；
 
 
 其主要特点包括:基于控制流图来组织定义代码执行、以类型为中心确定代码执行对象的流转、显示确定对象析构及异常处理；
 
+
+---
 ##### 2.控制流图CFG
 MIR基于控制流图来组织及定义，一个控制流图由一组基础块组成，每一个基础块由一系列语句和一个终结者组成，一个基础块中往往包含一个终结者并且处于基础块的末尾；每一个基础块都有一个编号，在终结者中以图边连接的方式实现不同基础块之间的连接以实现逻辑跳转，终结者包括有Goto、函数调用、SwitchInt、Return、Drop等，进而将一段代码逻辑形成一个有向控制流图；
 
-![cfg-basic](/imgs/cfg-1 "cfg-basic")
+![cfg-basic](/imgs/cfg-1.png "cfg-basic")
 
 
+---
 ##### 3.以类型为中心
 构建MIR是在类型检查完成之后，在构建MIR过程中记录每一个数据操作对象的类型，以明确其作为Move或Copy操作数来使用；其中对引用类型明确其引用的Region值即生命周期；
 其中定义的操作数类型包括有Copy、Move、Constant；Place表示用户定义的变量、临时变量、函数参数、返回值的访问路径；
@@ -52,16 +55,19 @@ pub enum Operand<'tcx> {
 }
 ```
 
+---
 ##### 4.显示确定对象析构
 通过维护数据操作对象的定义、使用及流转范围，显示明确对象的析构发生的地点，加上流程优化后，可简化析构的触发；
 
-![mir-drop](/imgs/mir-drop "mir-drop")
+![mir-drop](/imgs/mir-drop.png "mir-drop")
 
 
 ---
 #### 二、MIR主要数据结构
 为了描述程序的执行，MIR定义了简易的数据结构来描述程序执行涉及到的逻辑，主要包括基础块、语句、终结者、操作数、右值、Place、Local等；
-![mir-datastructure](/imgs/mir-datastructure "mir-datastructure")
+
+![mir-datastructure](/imgs/mir-datastructure.png "mir-datastructure")
+
 
 ##### 1.mir::Body
 它用来描述一个函数体；
@@ -114,6 +120,7 @@ pub struct BasicBlockData<'tcx> {
 }
 ```
 
+---
 ##### 2.mir::Statement和Terminator
 ```
 pub struct Statement<'tcx> {
@@ -198,8 +205,10 @@ pub enum TerminatorKind<'tcx> {
 }
 ```
 
+---
 ##### 3.mir::LocalDecs和Place
 
+```
 pub type LocalDecls<'tcx> = IndexVec<Local, LocalDecl<'tcx>>;
 
 /// Local表示LocalDecls中的LocalDecl索引
@@ -264,8 +273,11 @@ pub enum ProjectionElem<V, T> {
     },
     /// 省略部分其他类型.........
 }
+```
 
+---
 ##### 4.mir::Rvalue和Op
+
 ```
 pub enum Rvalue<'tcx> {
     /// x (either a move or copy, depending on type of x)
@@ -489,6 +501,7 @@ fn mir_const<'tcx>(
 }
 ```
 
+---
 ##### 2.mir_built生成MIR
 首先有local defid获取body id；
 然后创建Cx，检查typeck结果返回是否正常<如果没有进行typeck，则进行typeck>；
@@ -639,6 +652,7 @@ fn mir_build(tcx: TyCtxt<'_>,
 }
 ```
 
+---
 ##### 3.construct_fn生成MIR
 获取hir::body之后会调用construct_fn来生成MIR；
 
@@ -804,6 +818,7 @@ impl<'a, 'tcx> Cx<'a, 'tcx> {
 
 ```
 
+---
 ##### 4.make_mirror生成thir::Expr
 将hir::Expr生成thir::Expr，其中可能有三个不一样的地方：
 1.根据Expr本身逻辑的不同，在对应thir中插入类型为Scope的表达式，以便表示变量生命周期；
@@ -868,12 +883,14 @@ impl<'tcx> Mirror<'tcx> for &'tcx hir::Expr<'tcx> {
 
 ```
 
+---
 ###### A.let语句对应Scope
 由hir节点生成的Scope会用来绑定表示生命周期Region的值；
 
-![mir-scope](/imgs/mir-scope "mir-scope")
+![mir-scope](/imgs/mir-scope.png "mir-scope")
 
 
+---
 ###### B.使用类型检查结果设置类型
 ```
 fn make_mirror_unadjusted<'a, 'tcx>(
@@ -899,6 +916,7 @@ fn make_mirror_unadjusted<'a, 'tcx>(
 }
 ```
 
+---
 ##### 5.into_expr生成MIR
 转换thir::Expr，将其结果存储在destination中同时将中间生成的基础块和LocalDecls记录下来；
 
