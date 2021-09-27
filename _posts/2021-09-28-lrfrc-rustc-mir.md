@@ -503,7 +503,7 @@ fn mir_const<'tcx>(
 
 ---
 ##### 2.mir_built生成MIR
-首先有local defid获取body id；
+首先由local defid获取body id；
 然后创建Cx，检查typeck结果返回是否正常<如果没有进行typeck，则进行typeck>；
 最后传入生成的arguments和hir::body调用construct_fn来生成MIR；
 
@@ -658,7 +658,7 @@ fn mir_build(tcx: TyCtxt<'_>,
 
 其中需要特别指出的是MIR不是直接由HIR生成的，而由THIR<Typed HIR即带有类型信息的HIR>来生成的；
 
-THIR相当于另一种的临时中间描述，它包含通过typeck类型检查生成的ty::Ty类型信息；
+THIR相当于另一种的临时中间描述，它包含typeck类型检查生成的ty::Ty类型信息；
 
 由于ty::Ty类型都已池化，一个函数对应的THIR中间描述不会占用大多内存，所以无须池化THIR相关对象；
 
@@ -820,9 +820,12 @@ impl<'a, 'tcx> Cx<'a, 'tcx> {
 
 ---
 ##### 4.make_mirror生成thir::Expr
-将hir::Expr生成thir::Expr，其中可能有三个不一样的地方：
+将hir::Expr生成thir::Expr，其中可能有三个留意的地方：
+
 1.根据Expr本身逻辑的不同，在对应thir中插入类型为Scope的表达式，以便表示变量生命周期；
+
 2.为每一个Expr加上类型信息；
+
 3.增加类型转换等逻辑比如deref；
 
 ```
