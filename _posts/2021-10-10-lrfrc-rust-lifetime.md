@@ -29,15 +29,18 @@ https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html中详细介绍了lif
 为了有效通过引用的方式使用一个类型为T的对象实例，须保证在使用&T引用时，引用指向的T对象实例还有效存在，没有析构；
 
 虽然看起来比较简单明了，但真正要实现起来，却比较复杂，主要原因在于:
+
 A、T1对象实例可能分配在函数栈中，也可能分配在堆中，而析构的时机一般由编译器根据使用的代码上下文推导出来；
+
 B、对&T1引用而言，逻辑上只是一个指针，可以方便高效在函数体内部逻辑块范围内、不同函数之间、不同线程之间赋值和传递，甚至可能保存在另一个结构体T2对象中，通过赋值传递T2对象之后，可能再来使用这个原始的&T1引用；
+
 C、语言设计者为安全和使用效率上的平衡，而各自提供了不同的解决方案；
 
 Rust语言提供了所有权+lifetime&静态借用分析检查的方案，其以高效、高性能、安全著称，不过也带来理解和使用上的一些困惑，甚至难以理解；
 
 其主要的lifetime相关基础规则及概念，包括scope、region、lifetime annotations等，其目的是为了解决安全引用的问题；
 
-
+---
 ##### 2.scope和lifetime概念引入
 从下面示例代码，可直观的了解到引用变量r和对象实例x分别对应的lifetime为'a和'b，'a和'b即其有效的生命周期，表示其可有效被访问的liveness起始范围scope；且'a的liveness起始范围比'b的更大即'a outlives 'b，这导致在println!中访问引用变量r时存在悬空引用问题，因为对象实例x只在范围'b中有效；
 
@@ -58,6 +61,7 @@ scope和lifetime从严格概念上讲，还是有些细微的区别，lifetime�
 
 从下面示例代码中，引用变量r和对象实例x分别对应的lifetime为'a和'b，'a和'b表示其可有效被访问的liveness起始范围；
 这时'b的liveness起始范围比'a的更大即'b outlives 'a，这样在println!中访问引用变量r时不存在悬空引用问题，因为访问引用变量r发生在对象实例x的有效生命周期'b内；
+
 ```
 {
     let x = 5;            // ----------+-- 'b
@@ -75,6 +79,7 @@ scope和lifetime从严格概念上讲，还是有些细微的区别，lifetime�
 
 不同范围之间的关系比如更大、活更长往往比较的是它们的终点end('a)或end('b)是否处于至少一样大或更大的范围；
 
+---
 ##### 3.悬空引用的触发
 有了scope/lifetime基础概念之后，使用lifetime时如何会触发悬空引用或可安全引用？
 
@@ -87,6 +92,7 @@ scope和lifetime从严格概念上讲，还是有些细微的区别，lifetime�
 
 带有lifetime的对象实例变量或引用变量，在赋值传递的过程中，由于疏忽或代码逻辑复杂&不严谨，就可能触发悬空引用问题的发生；
 
+---
 ##### 4.lifetime标记的提出
 上面示例代码形象直观的从语义逻辑上描述了scope、lifetime概念，要简便的从语法角度来描述这些概念，于是提出lifetime标记'a的表示，用类似'a、'b的形式来表示一个lifetime，而'a、'b具体的scope值由编译器在借用检查中生成，并且用'a:'b的方式来表示outlives活得更长的语义；
 
@@ -102,7 +108,7 @@ lifetime标记可理解成，为了静态借用分析，在引用类型的语法
 
 lifetime对引用类型或引用变量来讲，内在逻辑上一直存在，就像一个类型的对象实例一定会存在创建和析构一样，但是否需要显示的用一个lifetime标记来标示则依赖于使用这个引用类型或变量的场景；
 
-
+---
 ##### 5.lifetime标记用作函数泛化参数
 泛化函数可使用lifetime标记annotations比如'a、'b作为泛化参数，它代表一个可后续具体化的lifetime参数，函数参数可以使用它作为引用变量类型定义的一部分；
 
@@ -129,6 +135,7 @@ fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
 由于lifetime 'a是泛化参数，其具体值由longest函数调用时根据传入的参数来确定即late bound，需要注意的是'a的值未必是传入参数x、y真实的lifetime，可能是两者的交集，这个交集尽可能的大，同时需要满足函数定义带来的约束<可称为同一个lifetime 'a>；
 
 下面示例展示输入参数引用变量string1、string2、result具有不同的真实的lifetime；
+
 ```
 fn main() {
     let string1 = String::from("long string is long");
@@ -141,6 +148,7 @@ fn main() {
 }
 ```
 
+---
 ##### 6.lifetime标记用作结构体泛化参数
 泛化结构体可使用lifetime标记annotations比如'a、'b作为泛化参数，它代表一个可后续具体化的lifetime参数，其字段可以使用它作为引用类型变量定义的一部分；
 
@@ -174,7 +182,7 @@ fn main() {
 
 在实例ImportantExcerpt对象前需要early bound提前确定lifetime 'a的值，其具体值由创建时传递的参数firt_sentence来决定；
 
-
+---
 ##### 7.lifetime bound
 就像其他泛化类型参数类似，可以使用lifetime bound来约束一个类型T或另一个lifetime 'b，已要求类型T或'b满足一定的条件；
 使用:来表示bound约束，类似与类型参数/Trait的bound约束，lifetime boud有如下形式及语义：
@@ -193,7 +201,7 @@ struct Ref<'a, T: 'a>(&'a T);
 
 另外出现'a: 'a从语法上是合理的，表示lifetime 'a的范围至少与自身的范围一样大，但'a上bound后，则它变成early bound；
 
-
+---
 ##### 8.lifetime Elision
 虽然每一个函数中涉及到的引用参数都可以显示的使用lifetime标记annotations，但在有些场景下可以省略annotations，由编译器自动推导生成一个annotation，以便减少代码的编写和减轻开发者的负担；
 
@@ -205,14 +213,18 @@ B.如果函数正好只有一个引用输入参数，则所有引用输出参数
 
 C.如果函数有多个输入参数，其中有一个为&self或&mut self，则所有引用输出参数都使用&self或&mut self的lifetime；
 
+```
 fn first_word(s: &str) -> &str {} 等价 fn first_word<'a>(s: &'a str) -> &'a str {}
+```
 
 由于没法满足B、C规则，上面提到的longest函数中必须显示写出lifetime标记，否则会编译出错，
 因为不显示标记，则无法确定两个输入参数和一个输出参数之间的lifetime约束；
 
+```
 fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {}
+```
 
-
+---
 ##### 9.特殊标记'static
 标记'static作为Rust语言保留的lifetime标记标识，可用来表示引用的lifetime，也可用作lifetime boud来约束其他类型；
 
@@ -231,6 +243,7 @@ fn generic<T>(x: T) where T: 'static {}
 
 ```
 
+---
 ##### 10.trait及impl中使用标记
 由于lifetime标记'a是以泛化参数的形式出现来结构体ImportantExcerpt定义中，是结构体泛化参数的一部分；
 
@@ -306,6 +319,7 @@ let cc = GenTypeB::<i8> { data: &b };
 let ccc = GenTypeB::<'a, i8> { data: &b };
 ```
 
+---
 ###### B.late bound
 late bound迟绑定主要用于泛化函数中的泛化lifetime标记参数的延迟具体化和实例化；
 
@@ -332,6 +346,7 @@ note: the late bound lifetime parameter is introduced here
 
 ```
 
+---
 ##### 12.Higher-ranked trait bounds
 ###### A.HRTB基础
 HRTB作为Higher-ranked trait bounds的简写，比较奇怪一种语法，初步看起来往往让人困惑和难以理解；
@@ -380,10 +395,12 @@ fn call_on_ref_zero<F>(f: F) where F: for<'a> Fn(&'a i32) {
 
 需要留意的是lifetime 'a并不是函数call_on_ref_zero的lifetime标记泛化参数；
 
+---
 ###### B.HRTB由来及示例
+```
 fn foo<'b>(x: &'b u32) {}
-
-定义了具有泛化参数'b的foo函数，它内建的函数指针类型为：for<'b> fn(&'b u32)
+```
+上面定义了具有泛化参数'b的foo函数，它内建的函数指针类型为：for<'b> fn(&'b u32)，
 
 表示该函数可以接受任何lifetime的引用；
 
@@ -459,6 +476,7 @@ fn main() {
 }
 ```
 
+---
 ##### 13.特殊标记'_
 当具体为哪个标记不清晰时，可使用标记'_来表示一个匿名lifetime标记，代表任意可由编译器推导出来的lifetime；
 
@@ -484,6 +502,7 @@ impl fmt::Debug for StrWrap<'_> {
 }
 ```
 
+---
 ##### 14.Non-lexical lifetimes
 Non-lexical lifetimes简称NLL，其作用在于表示lifetime不是仅仅基于词汇上的，而是基于实际代码分支和逻辑调用上；
 
@@ -537,14 +556,18 @@ fn main() {
 学习使用lifetime的主要难点在哪里？
 觉得主要在于：
 A.对其基本概念的理解要全面还要加上实践；
+
 B.全面的准确的资料比较少，特别是中文资料；
+
 C.lifetime逻辑本质上既抽象又具体，对错误使用后的分析手段比较少；
 其中既有编译器内部推导或自动强制转换计算出来的部分，又有程序员编码指定的部分，导致难以全面确切知道错误点，幸运的是编译器错误提示还算全面；
+
 D.lifetime标记只用来静态检查分析，没办法运行时调试；
 虽然社区逐步有相关gui化的工具，但还是不够完善与全面；
 
 期望该篇文章能对lifetime理解与使用有所帮助；
 
+---
 ##### 16.可否不使用lifetime
 lifetime及其标记出现，主要是为了解决悬空引用的问题，本质上是为了解决对象复用和引用可能遇到的问题；
 
@@ -554,13 +577,13 @@ lifetime及其标记出现，主要是为了解决悬空引用的问题，本质
 
 不过如果理解了lifetime主要逻辑及概念，对Rust语言其他所有权/Move&Copy/Send&Sync等概念会有非常大的帮助；
 
-
+---
 ##### 17.lifetime与泛化
 lifetime标记与泛化结合在一起，从学习者的角度看，大大的加大了分别学习lifetime和泛化的难度，但从Rust语言实现的角度来看，它一定程度上统一了其内在的强大的类型系统，让加上lifetime和类型的引用作为一个类型，可统一进行分析处理；
 
 同时为了实用，也有了early bound、late bound、for <'a>等针对lifetime相关的概念的提出，这样可做到既有统一，又有针对特定场景的差别；
 
-
+---
 ##### 18.lifetime与borrow checker
 lifetime与Rust语言的核心borrow checker是啥关系？
 
