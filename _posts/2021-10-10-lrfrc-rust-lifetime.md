@@ -184,7 +184,7 @@ fn main() {
 
 ---
 ##### 7.lifetime bound
-就像其他泛化类型参数类似，可以使用lifetime bound来约束一个类型T或另一个lifetime 'b，已要求类型T或'b满足一定的条件；
+就像其他泛化类型参数类似，可以使用lifetime bound来约束一个类型T或另一个lifetime 'b，以要求类型T或'b满足一定的条件；
 使用:来表示bound约束，类似与类型参数/Trait的bound约束，lifetime boud有如下形式及语义：
 
 'a: 'b 表示lifetime 'a必须outlive lifetime 'b即'a的范围至少与'b的范围一样大；
@@ -573,7 +573,7 @@ lifetime及其标记出现，主要是为了解决悬空引用的问题，本质
 
 而Rust语言中实现对象复用的方式还有RefCell/Rc/Arc等，尽可能使用这些Item的接口来访问指定对象，一样可以满足很多需要对象复用的场景；
 
-而无须陷入到理解使用lifetime的特性使用上；
+而无须陷入到理解使用lifetime标记的特性使用上；
 
 不过如果理解了lifetime主要逻辑及概念，对Rust语言其他所有权/Move&Copy/Send&Sync等概念会有非常大的帮助；
 
@@ -591,13 +591,11 @@ Rust语言的borrow checker借用检查作为其独一无二的杀手锏，其�
 
 在于安全的检查每一个对象的引用是否安全、是否安全移动、是否安全析构，简单说来就是对对象lifetime的管理，只不过引用中的lifetime是其中的一部分，但没有完整正确的对象lifetime管理分析，就没有完整正确的引用中的lifetime；
 
-总的说来，全面理解了lifetime和borrow checker就掌握了Rust语言的核心，理解了lifetime就理解Rust语言核心的一大半；
+总的说来，全面理解了lifetime和borrow checker就掌握了Rust语言的核心；
 
 ---
 #### 四、总结及其他
 通过介绍lifetime的方方面面，但愿能提升对Rust语言生命周期的理解和运用，如有错误，感谢指正；
-
-后续尝试介绍borrow checker借用检查，感兴趣的话请保持关注；
 
 ---
 参考
@@ -606,6 +604,8 @@ Rust语言的borrow checker借用检查作为其独一无二的杀手锏，其�
 * [<font color="blue">https://rustwiki.org/en/edition-guide/rust-2018/ownership-and-lifetimes/</font>](https://rustwiki.org/en/edition-guide/rust-2018/ownership-and-lifetimes/)
 * [<font color="blue">https://dtolnay.github.io/rust-quiz/5</font>](https://dtolnay.github.io/rust-quiz/5)
 * [<font color="blue">https://doc.rust-lang.org/stable/rust-by-example/scope/lifetime.html</font>](https://doc.rust-lang.org/stable/rust-by-example/scope/lifetime.html)
+* [<font color="blue">https://doc.rust-lang.org/nightly/nomicon/lifetimes.html</font>](https://doc.rust-lang.org/nightly/nomicon/lifetimes.html)
+
 
 
 ---
