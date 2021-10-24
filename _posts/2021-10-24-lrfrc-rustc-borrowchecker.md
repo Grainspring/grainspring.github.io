@@ -21,13 +21,20 @@ learn rust from rustc(LRFRC)系列文章尝试从另外一个角度来学习Rust
 #### 一、借用检查基础
 ##### 1.borrow check简介
 借用检查发生在生成的MIR之上，其主要任务在于：
+
 A.所有变量在使用之前须被初始化；
+
 B.不能移动同样值或变量两次；
+
 C.当一个值在被引用或借用时，不能移动这个值；
+
 D.当一个值在被引用时，不能修改这个值；
+
 E.当一个值在被借用时，不能访问这个值(除了通过引用)；
 
+
 这些任务就是在检查代码是否符合Rust语言的核心特性:
+
 所有权系统、移动/引用/借用相关规则
 
 ---
@@ -35,9 +42,13 @@ E.当一个值在被借用时，不能访问这个值(除了通过引用)；
 借用检查类似于类型推导基于[<font color="blue">Static Program Analysis</font>](https://cs.au.dk/~amoeller/spa/)来实现。
 
 大致逻辑如下：
+
 A.建立一个检查/推导上下文；
+
 B.为变量赋值/参数传递设定一组规则；
+
 C.遍历需要分析的函数或代码片段，假定其中代码逻辑符合B设定的规则，这样不同变量或类型会对应产生一组它支持的约束；
+
 D.分析C中为每一个变量或类型收集而来的约束，检查这些约束之间是否有冲突，如有则检查不通过，提示编译错误；
 
 
@@ -54,14 +65,20 @@ D.分析C中为每一个变量或类型收集而来的约束，检查这些约�
 10}
 ```
 
+
 对上面会产生悬空引用的示例代码的静态分析检查流程大致如下：
+
 a.分析到行6，&x会产生其对应的region/lifetime变量r1，由于其出现在行6，所以变量r1的值包含loc 6；
+
 
 b.同时行6中，执行了引用赋值操作，按照生命周期可赋值的规则，那么region变量r1的值须包含变量r对应的region变量r2的值；
 
+
 c.分析到行9时，由于变量r出现在这里，所以region变量r2的值包含loc 9；
 
+
 d.最后分析region变量r1、r2收集而来的约束值，发现其中有冲突，变量r1的值只应在loc 4-7内，但又必须包含loc 9，于是提示有错误，触发编译失败；
+
 
 ---
 ##### 3.SubType&Variance
@@ -82,6 +99,7 @@ Variance用来描述如下内容：
 一个类型由多个类型组成时，可分别单独判断它与各个类型之间的Variance关系；
 
 主要Variance关系有：
+
 ![variance](/imgs/brwck_variance.png "variance")
 
 
@@ -123,9 +141,12 @@ CFG中位置(用L1、L2表示)、一个region推导变量的vid(用end('#1)表�
 ---
 #### 二、借用检查流程
 借用检查的整个流程非常复杂，大致可分为以下几个阶段：
+
 A.将某个函数的MIR复制一份，用来进行借用检查分析，在其中修改类型和引用涉及到的region/lifetime等；
 
+
 B.调用replace_regions_in_mir函数将当前MIR中所有涉及到region/lifetime的类型或变量用新生成的region推导变量替代；
+
 其中包括通过universal_regions build/renumber_regions生成universal、existential regions.
 
 函数的引用参数中的region往往是universal；出现在函数体的引用的region是existential.
@@ -133,16 +154,19 @@ B.调用replace_regions_in_mir函数将当前MIR中所有涉及到region/lifetim
 C.对MIR进行遍历分析Dataflow，收集哪些变量发生了初始化和move，并记录对应move path；
 相关逻辑发生在rustc_mir::dataflow::move_paths::builder
 
+
 D.对MIR进行第2次遍历检查，根据变量赋值和设定的规则，收集所有region变量包含的约束即它们之间的region关系；
 相关逻辑发生有：
 rustc_mir::borrow_check::type_check::free_region_relations
 rustc_mir::borrow_check::type_check check_terminator
 rustc_mir::borrow_check::type_check::input_output equate_inputs_and_outputs
 
+
 E.对收集来的各个region变量包含的约束进行分析包括liveness/依赖关系检查
 相关逻辑发生有：
 rustc_mir::borrow_check::type_check::liveness::trace
 rustc_mir::borrow_check::region_infer compute_scc_universes
+
 
 F.使用收集和分析后的region约束遍历MIR，确认这些约束之间是否存在冲突
 相关逻辑发生有：
@@ -153,6 +177,7 @@ rustc_mir::borrow_check MirBorrowckCtxt::process_statement
 
 如果代码中有涉及所有权、引用借用、生命周期等方面的错误，往往在这个阶段会被发现，并提示出现编译错误；
 
+
 G.输出借用检查的结果
 相关逻辑发生有： 
 rustc_mir::borrow_check do_mir_borrowck: result = BorrowCheckResult 
@@ -161,9 +186,9 @@ rustc_mir::borrow_check do_mir_borrowck: result = BorrowCheckResult
 #### 三、总结及其他
 简单介绍借用检查borrow check涉及到的主要流程及知识点，期望能对理解借用检查有所帮助，如有错误，欢迎指正；
 
-另外历时6个多月完成LRFRC系列文章主要内容，但愿所有Rust爱好者通过阅读LRFRC系列文章能有好的收获与发展；
+历时6个多月完成LRFRC系列文章主要内容，但愿所有Rust爱好者通过阅读LRFRC系列文章能有好的收获与发展；
 
-后续会尝试以新的方式来学习、应用、推广Rust的使用，感谢大家持续的关注；
+后续会尝试更多以新的方式来学习、应用、推广Rust使用，感谢大家持续的关注；
 
 
 ---
