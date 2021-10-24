@@ -92,7 +92,8 @@ SubType用来描述如下内容:
 Variance用来描述如下内容：
 在泛化类型中，如果泛化参数之间满足SubType的关系，那么泛化类型参数具体化之后的类型之间是否有同样的SubType关系；
 
-这样SubType关系是否有相关性的类型有：正向相关covariant，反向相关contravariant，不相关invariant；
+SubType关系的相关性Variance类型有：
+正向相关covariant，反向相关contravariant，不相关invariant；
 
 在检查赋值的过程中，只有类型之间只有符合正向相关，才可有效进行赋值；
 
