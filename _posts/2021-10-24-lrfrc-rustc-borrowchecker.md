@@ -188,7 +188,7 @@ rustc_mir::borrow_check do_mir_borrowck: result = BorrowCheckResult
 
 历时6个多月完成LRFRC系列文章主要内容，但愿所有Rust爱好者通过阅读LRFRC系列文章能有好的收获与发展；
 
-后续会尝试更多以新的方式来学习、应用、推广Rust使用，感谢大家持续的关注；
+后续会更多尝试以新的方式来学习、应用、推广Rust使用，感谢大家持续的关注；
 
 
 ---
