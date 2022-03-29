@@ -11,6 +11,12 @@ excerpt: 学习Rust
 
 TiKV作为首屈一指的用Rust语言实现的分布式KV存储引擎，获得了业界极大的关注和商业上的成功。网上也有不少TiKV架构设计及源码解析的文章，这篇文章主要探讨TiKV如何运用Rust语言的抽象及并发来实现TiKV的弹性，以供后续深入运用Rust语言和TiKV备忘参考。
 
+---
+#### 一、TiDB存储引擎TiKV
+分布式存储引擎TiKV基于单机存储引擎RocksDB，通过Raft分布式共识算法保证数据强一致性，它具有高度分层，弹性扩展，稳定可靠的特性，扛起分布式数据库TiDB核心基础责任。
+
+TiKV使用Rust语言来实现，其整体架构如下：
+
 ![TiKV架构](/imgs/tikv_overview.png "TiKV架构")
 
 每一个TiDB节点实例作为TiKV Client来与TiKV节点实例进行交互；
