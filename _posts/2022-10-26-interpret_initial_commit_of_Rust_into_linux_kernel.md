@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "代码杂谈：解读Rust进入Linux内核的初始提交"
+title:  "解读Rust进入Linux内核的初始提交"
 date:   2022-10-26 00:06:06
 categories: Rust
 excerpt: Rust for Linux
@@ -9,7 +9,7 @@ excerpt: Rust for Linux
 * content
 {:toc}
 
-[Linus Torvalds发表Rust支持即将出现在Linux内核](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247484091&idx=1&sn=3aff0d8075d65568c8935dc70f08e360)，并提出首个初始提交应该'包含尽可能少的功能'的要求之后，Rust-for-Linux团队将已开发的部分驱动程序和驱动支持所需的代码裁剪之后，Linus于2022.10.16发布了Linux6.1-rc1开发版本，其中已正式包含Rust相关代码，实现Rust语言代码模块加载到内核所需的最小基础支持，和一个小的示例模块。
+[<font color="blue">Linus Torvalds发表Rust支持即将出现在Linux内核</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247484091&idx=1&sn=3aff0d8075d65568c8935dc70f08e360)，并提出首个初始提交应该'包含尽可能少的功能'的要求之后，Rust-for-Linux团队将已开发的部分驱动程序和驱动支持所需的代码裁剪之后，Linus于2022.10.16发布了Linux6.1-rc1开发版本，其中已正式包含Rust相关代码，实现Rust语言代码模块加载到内核所需的最小基础支持，和一个小的示例模块。
 
 Linux6.1版本最终发布应该在2022年12月中旬左右，让我们一块来提前看看这个初始提交，了解Rust语言及社区是如何创造历史，打破30年以来只能使用C语言开发Linux内核的规则；对Rust语言和Linux内核来讲这个提交或许会成为一个重要的里程碑，记录和引领着未来Rust语言和Linux社区的重要发展；
 
@@ -26,8 +26,9 @@ Linux6.1版本最终发布应该在2022年12月中旬左右，让我们一块来
 
 ---
 #### 二、初始提交的主要内容解读
-##### 1.概览
+##### 1.初始提交概览
 ![patch.Diffstat](/imgs/linux6.1.diffstat.jpg "Diffstat")
+
 从中可以看到这次提交包括89 files changed, 12552 insertions, 51 deletions，虽然要求'包含尽可能少的功能'，但其内容还是不少，其中主要包括开发文档、Rust相关基础和示例代码、内核编译构建系统配置和Makefile修改及其他编译支持工具代码；
 
 由于其内容相当的多并且非常具体，这里只记录分享个人认为比较重要的部分，毕竟Linux内核开发有一个相对高的门槛，参与者相对少，但作为普通Rust开发者或许可从中发现Rust语言一些平时没怎么使用但特别有用的特性，特别是对嵌入式方向的Rust开发者，或许会提供非常好的参考与借鉴；
@@ -94,8 +95,8 @@ Rust-for-Linux核心开发者多次提到使用Rust语言带来的潜在好处�
 
 ---
 ##### 3.最小的示例模块
-linux6.1.minimal.mod.jpg
 ![minimal mod](/imgs/linux6.1.minimal.mod.jpg "minimal mod")
+
 上面列举了可在Linux内核中运行的使用Rust代码编写的最小模块示例代码；
 
 相当的简洁，它使用了一个kernel crate提供的prelude；
@@ -122,8 +123,8 @@ kernel crate基于rust-src中提供的core crate，和内核开发提供的alloc
 
 ---
 ###### 4.1.pr_info宏实现
-
 ![pr_info](/imgs/linux6.1.pr_info.png "pr_info")
+
 pr_info宏实现将Rust代码中任何格式化的内容，输出显示在内核日志中，而内核日志的输出显示已有对应的bindings::_printk接口，但为了支持Rust任何可格式化的Rust内容，改写了内核内部_printk的实现；
 
 新增一个'%pA'格式化指示器，一旦遇到这个指示器，表示其需要显示的内容在一个core::fmt::Arguments对象指针，而具体如何从这个core::fmt::Arguments中取出其内容，则调用Rust代码中实现的rust_fmt_argument函数；
@@ -136,8 +137,8 @@ RawFormatter类似std标准库String和stdout可将格式化的内容记录或�
 
 ---
 ###### 4.2.module宏实现
-
 ![module](/imgs/linux6.1.module.macro.png "module macro")
+
 module宏对使用者来讲相当的简明扼要，但要实现与C语言实现的module一样的功能，并能初始化Rust代码提供的Module，Rust-for-Linux开发者使用Rust语言提供的过程宏来实现这个module；
 
 实现一个Rust语言过程宏，对一般开发者来讲往往觉得比较难，但初始提交中的module宏实现，相当的直观，它没有使用传统syn和quote crate，主要使用proc_macro::TokenStream，就像格式化输出一段定制化的Rust代码一样；
@@ -148,19 +149,20 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 
 另外顺便提一下，module过程宏本身的实现代码编译及运行是在当前编译环境下运行的，非内核代码运行在内核空间，它生成的libmacros.so，供编译时使用的编译器rustc来使用，初始提交中对此也有所提及；
 
-对这一点及过程宏逻辑感兴趣的朋友，可参考以前文章[LRFRC系列:全面理解Rust宏](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247483731&idx=1&sn=4ab305dd9af793085058a1d398984aac)，其中有提到其相关逻辑；
+对这一点及过程宏逻辑感兴趣的朋友，可参考以前文章[<font color="blue">LRFRC系列:全面理解Rust宏</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247483731&idx=1&sn=4ab305dd9af793085058a1d398984aac)，其中有提到其相关逻辑；
 
 ---
 ###### 4.3.panic_handler定制
 ![panic_handler](/imgs/linux6.1.panic_handler.png "panic_handler")
+
 为了对任何Rust代码触发的panic进行自定义处理，kernel crate自定义了panic_handler的实现，它先打印一段emerg日志后，然后调用bindings::BUG()，按照内核出现BUG来处理，以触发内核内部已有的由C语言提供的panic处理机制；
 
 后面的loop {}是为了满足Rust语法上需要返回! never_type，在bindgen工具对__noreturn支持后，这个可以去掉；
 
 ---
 ###### 4.4.全局内存分配定制
-
 ![allocators](/imgs/linux6.1.allocators.png "allocators")
+
 使用global_allocator属性来定制一个全局KernelAllocator类型的ALLOCATOR对象，它实现了GlobalAlloc trait的alloc和delloc方法，分别调用bindings::krealloc和bindings::kfree，并对应实现__rust_alloc、__rust_realloc__和rust_alloc_zeroed函数；
 
 这样Rust代码中的堆内存分配和释放需求会得到满足比如Box的实现，Vec中的自动内存分配和释放等；
@@ -177,8 +179,8 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 
 ---
 ###### 4.6.compiler_builtins定制
-
 ![compiler_builtins](/imgs/linux6.1.compiler.builtins.png "compiler_builtins")
+
 上面的注释清楚的描述为啥需要这个定制，并指出为啥使用panic!来模拟实现；
 
 ---
@@ -219,7 +221,7 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 ```
 如果对上面提到的属性比如条件编译cfg、no_std、panic_handler、global_allocator等含义及语法不太熟悉的话，
 
-可参考[Rust Built-in attributes index](https://doc.rust-lang.org/stable/reference/attributes.html#built-in-attributes-index)
+可参考[<font color="blue">Rust Built-in attributes index</font>](https://doc.rust-lang.org/stable/reference/attributes.html#built-in-attributes-index)
 
 ---
 ##### 7.unsafe、SAFETY、Safety
@@ -231,12 +233,13 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 
 初始提交中的Coding Guidelines部分对其有相关说明，包括如何使用SAFETY、Safety进行文档注释和代码行注释，还有示例及原因解释，非常的清楚明了；
 
-某种程度体现了处理代码安全问题是一个体系问题，甚至是一个哲学问题，就像Linus炉边杂谈:关于Rust和系统安全中提到现实世界代码没有绝对的安全；
+某种程度体现了处理代码安全问题是一个体系问题，甚至是一个哲学问题，就像[<font color="blue">Linus炉边杂谈:关于Rust和系统安全</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247484106&idx=1&sn=c6f5b6eccb653f6dc11ee02b2f047b37)中提到现实世界代码没有绝对的安全；
 
 要达到相当高程度的代码安全，需要进行额外的加固，利用工具非人工来自动扫描诊断，提前发现代码调用之间是否遵守契约，哪怕不遵守契约也有公开透明的文档来支撑或约束，这样可以快速作出后续响应，让系统变的更加安全和可靠；
 
 或许Rust语言及生态工具正是这种代码安全理念的忠实践行者，让它得到Linus和内核社区开发者的认可成为了可能，也就有了这个初始提交；
 
+---
 #### 三、初始提交试用体验
 在ubuntu18.0.4及vim开发环境验证步骤如下：
 ##### 1.下载linux-6.1-rc1版本
