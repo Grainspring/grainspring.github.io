@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "解读Rust进入Linux内核的初始提交"
+title:  "代码杂谈:解读Rust进入Linux内核的初始提交"
 date:   2022-10-26 00:06:06
 categories: Rust
 excerpt: Rust for Linux
@@ -38,9 +38,11 @@ Linux6.1版本最终发布应该在2022年12月中旬左右，让我们一块来
 ---
 ##### 2.开发前安装及准备
 在Documentation/rust/quick-start.rst和Documentation/process/changes.rst中
-要求安装rusc 1.62.0和bindgen 0.56.0及以上版本，还有llvm及libclang的支持；
+要求安装rusc 1.62.0和bindgen 0.56.0版本，还有llvm及libclang的支持；
 
-![depends](/imgs/linux6.1.depends.png "depends")
+由于内核代码依赖编译器一些不稳定features所以需要使用特定编译器版本，更新的版本可能不能用来编译内核Rust代码；
+
+![depends](/imgs/linux6.1.depends.jpg "depends")
 
 另外还包括Rust语言生态工具rustdoc、rustfmt、clippy、cargo、rust-analyzer、rust-src；
 
@@ -123,7 +125,7 @@ kernel crate基于rust-src中提供的core crate，和内核开发提供的alloc
 
 ---
 ###### 4.1.pr_info宏实现
-![pr_info](/imgs/linux6.1.pr_info.png "pr_info")
+![pr_info](/imgs/linux6.1.pr_info.jpg "pr_info")
 
 pr_info宏实现将Rust代码中任何格式化的内容，输出显示在内核日志中，而内核日志的输出显示已有对应的bindings::_printk接口，但为了支持Rust任何可格式化的Rust内容，改写了内核内部_printk的实现；
 
@@ -137,7 +139,7 @@ RawFormatter类似std标准库String和stdout可将格式化的内容记录或�
 
 ---
 ###### 4.2.module宏实现
-![module](/imgs/linux6.1.module.macro.png "module macro")
+![module](/imgs/linux6.1.module.macro.jpg "module macro")
 
 module宏对使用者来讲相当的简明扼要，但要实现与C语言实现的module一样的功能，并能初始化Rust代码提供的Module，Rust-for-Linux开发者使用Rust语言提供的过程宏来实现这个module；
 
@@ -147,13 +149,13 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 ![module impl](/imgs/linux6.1.module.impl.jpg "module impl")
 它提供extern "C" init_module和cleanup_module函数的定义及实现，以及根据是否是内核内置模块等，生成不同的代码以初始化指定Module类型的实例，具体请参考初始提交中相关内容；
 
-另外顺便提一下，module过程宏本身的实现代码编译及运行是在当前编译环境下运行的，非内核代码运行在内核空间，它生成的libmacros.so，供编译时使用的编译器rustc来使用，初始提交中对此也有所提及；
+另外module过程宏本身的实现代码编译及运行是在当前编译环境下运行的，非内核代码运行的内核空间，它生成的libmacros.so，供编译时使用的编译器rustc来使用，初始提交中对此也有所提及；
 
 对这一点及过程宏逻辑感兴趣的朋友，可参考以前文章[<font color="blue">LRFRC系列:全面理解Rust宏</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247483731&idx=1&sn=4ab305dd9af793085058a1d398984aac)，其中有提到其相关逻辑；
 
 ---
 ###### 4.3.panic_handler定制
-![panic_handler](/imgs/linux6.1.panic_handler.png "panic_handler")
+![panic_handler](/imgs/linux6.1.panic_handler.jpg "panic_handler")
 
 为了对任何Rust代码触发的panic进行自定义处理，kernel crate自定义了panic_handler的实现，它先打印一段emerg日志后，然后调用bindings::BUG()，按照内核出现BUG来处理，以触发内核内部已有的由C语言提供的panic处理机制；
 
@@ -161,7 +163,7 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 
 ---
 ###### 4.4.全局内存分配定制
-![allocators](/imgs/linux6.1.allocators.png "allocators")
+![allocators](/imgs/linux6.1.allocators.jpg "allocators")
 
 使用global_allocator属性来定制一个全局KernelAllocator类型的ALLOCATOR对象，它实现了GlobalAlloc trait的alloc和delloc方法，分别调用bindings::krealloc和bindings::kfree，并对应实现__rust_alloc、__rust_realloc__和rust_alloc_zeroed函数；
 
@@ -175,11 +177,13 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 
 所以上面提到的模块示例代码中使用'numbers.try_push(72)?'而不是'numbers.try_push(72);'，表示在无法分配到内存时会通过?将AllocError直接返回给调用者；
 
+![compiler_builtins](/imgs/linux6.1.no_oom_handling.jpg "compiler_builtins")
+
 另外为了保证这种逻辑要求的一致性，内核中实现的numbers对象其实并没有push方法，无法象使用std标准库中的Vec类型对象一样使用push方法，其中区别也是由no_global_oom_handling来控制实现的；
 
 ---
 ###### 4.6.compiler_builtins定制
-![compiler_builtins](/imgs/linux6.1.compiler.builtins.png "compiler_builtins")
+![compiler_builtins](/imgs/linux6.1.compiler.builtins.jpg "compiler_builtins")
 
 上面的注释清楚的描述为啥需要这个定制，并指出为啥使用panic!来模拟实现；
 
@@ -229,13 +233,17 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 关于Rust语言中unsafe关键词的理解以及其背后的处理逻辑，大家往往迷糊不清，或过于理想，或过于绝对化；
 比如：不相信Rust语言及生态能达到宣称的安全，看到unsafe就认为这段代码可能有问题有Bug不可靠，产生不信任；没看到unsafe的代码就认为百分百安全；
 
-![unsafe](/imgs/linux6.1.safety.unsafe.comments.jpg "unsafe comments")
+![safety](/imgs/linux6.1.safety.unsafe.comments.jpg "safety comments")
 
 初始提交中的Coding Guidelines部分对其有相关说明，包括如何使用SAFETY、Safety进行文档注释和代码行注释，还有示例及原因解释，非常的清楚明了；
 
-某种程度体现了处理代码安全问题是一个体系问题，甚至是一个哲学问题，就像[<font color="blue">Linus炉边杂谈:关于Rust和系统安全</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247484106&idx=1&sn=c6f5b6eccb653f6dc11ee02b2f047b37)中提到现实世界代码没有绝对的安全；
+![unsafe](/imgs/linux6.1.safety.unsafe.comments-1.jpg "unsafe comments")
 
-要达到相当高程度的代码安全，需要进行额外的加固，利用工具非人工来自动扫描诊断，提前发现代码调用之间是否遵守契约，哪怕不遵守契约也有公开透明的文档来支撑或约束，这样可以快速作出后续响应，让系统变的更加安全和可靠；
+unsafe代码块需要这些注释的原因，在于遇到unsafe块内代码编译器不会去做静态安全检查而已，其是否安全由开发者自己来保证；
+
+这某种程度体现了处理代码安全问题是一个体系问题，甚至是一个哲学问题，就像[<font color="blue">Linus炉边杂谈:关于Rust和系统安全</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247484106&idx=1&sn=c6f5b6eccb653f6dc11ee02b2f047b37)中提到现实世界代码没有绝对的安全；
+
+要达到相当高程度的代码安全，需要进行额外的加固，利用工具比如编译器非人工来自动扫描诊断，提前发现代码调用之间是否遵守契约，哪怕不遵守契约也有公开透明的文档来支撑或约束，这样可以快速作出后续响应，让系统变的更加安全和可靠；但有些代码无法依靠工具时，则需要人工确认和保证其安全可靠性；
 
 或许Rust语言及生态工具正是这种代码安全理念的忠实践行者，让它得到Linus和内核社区开发者的认可成为了可能，也就有了这个初始提交；
 
@@ -286,14 +294,17 @@ $make LLVM=1 -j6
 
 ---
 #### 四、总结与展望
-随着Linux6.1-rc1开发版本的发布，已完成Rust进入Linux内核的初始提交，进一步验证Rust语言以安全和高性能闻名的特性，Rust语言必将受到更多人的关注或挑战，同时让Rust语言及生态受到业界或媒体的赞誉；
+随着Linux6.1-rc1开发版本的发布，已完成Rust进入Linux内核的初始提交，进一步验证Rust语言以安全和高性能闻名的特性，Rust语言及生态必将受到更多人的关注或挑战；
 
-由于Rust语言本身的复杂性和学习曲线，整体生态还没有大范围进入到人们的日常工作中，市场上对Rust开发者的需求也没有那么多，前途是光明的，但道路是艰巨的，需要继续努力发挥和应用好Rust已有的成果；
+但由于Rust语言本身的复杂性和学习曲线，整体生态还没有大范围进入到人们的日常工作中，市场上对Rust开发者的需求也没有那么多；
+
+不过有了这个小的初始提交的突破，前途是光明的，道路是艰巨的，还需要继续努力发挥和应用好Rust语言及社区已有的成果；
 
 随着参与Rust语言开发者越来越多，相信在不久的将来，使用Rust语言实现的Linux驱动程序或应用服务定会走进人们的日常工作和生活；
 
 ---
 参考
+* [<font color="blue">初始提交的申请</font>](https://lore.kernel.org/lkml/202210010816.1317F2C@keescook/)
 * [<font color="blue">Merge tag 'rust-v6.1-rc1' of https://github.com/Rust-for-Linux/linux</font>](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8aebac82933ff1a7c8eede18cab11e1115e2062b)
 * [<font color="blue">Linux6.1-rc1版本发布及下载</font>](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tag/?h=v6.1-rc1)
 * [<font color="blue">A first look at Rust in the 6.1 kernel</font>](https://lwn.net/Articles/910762/)
