@@ -208,7 +208,7 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 }
 ```
 
-另外需要提一下的是，这个target.json这个并没有target_has_atomic="64"、target_has_atomic="ptr"、target_has_atomic_load_store="ptr"等跟atomic相关的描述，所以目前内核Rust代码并不能使用跟atomic相关的接口比如Rc和Arc等；
+另外需要提一下，目前内核Rust代码并不能使用接口比如Rc和Arc等；
 ![atomic cfgs](/imgs/linux6.1.target.atomic.jpg "atomic cfgs")
 
 ---
