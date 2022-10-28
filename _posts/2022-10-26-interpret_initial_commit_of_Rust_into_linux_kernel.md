@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "代码杂谈:解读Rust进入Linux内核的初始提交"
+title:  "代码杂谈:解读Rust进入Linux内核的首个初始提交"
 date:   2022-10-26 00:06:06
 categories: Rust
 excerpt: Rust for Linux
@@ -9,7 +9,7 @@ excerpt: Rust for Linux
 * content
 {:toc}
 
-[<font color="blue">Linus Torvalds发表Rust支持即将出现在Linux内核</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247484091&idx=1&sn=3aff0d8075d65568c8935dc70f08e360)，并提出首个初始提交应该'包含尽可能少的功能'的要求之后，Rust-for-Linux团队将已开发的部分驱动程序和驱动支持所需的代码裁剪之后，Linus于2022.10.16发布了Linux6.1-rc1开发版本，其中已正式包含Rust相关代码，实现Rust语言代码模块加载到内核所需的最小基础支持，和一个小的示例模块。
+[<font color="blue">Linus Torvalds发表Rust支持即将出现在Linux内核</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247484091&idx=1&sn=3aff0d8075d65568c8935dc70f08e360)，并提出首个初始提交应该'包含尽可能少的功能'的要求之后，Rust-for-Linux团队将已开发的部分驱动程序和驱动支持所需的代码裁剪之后，Linus于2022.10.16发布了Linux6.1-rc1开发版本，其中已正式包含Rust相关代码，实现Rust语言代码模块加载到内核所需的最小基础支持和一个小的示例模块。
 
 Linux6.1版本最终发布应该在2022年12月中旬左右，让我们一块来提前看看这个初始提交，了解Rust语言及社区是如何创造历史，打破30年以来只能使用C语言开发Linux内核的规则；对Rust语言和Linux内核来讲这个提交或许会成为一个重要的里程碑，记录和引领着未来Rust语言和Linux社区的重要发展；
 
@@ -178,7 +178,7 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 
 这里的不同由内核代码中编译alloc crate时使用了--cfg no_global_oom_handling，而标准库std编译alloc时并没有使用这个条件编译；
 
-所以上面提到的模块示例代码中使用'numbers.try_push(72)?'而不是'numbers.try_push(72);'，表示在无法分配到内存时会通过?将AllocError直接返回给调用者；
+所以上面提到的模块示例代码中使用'numbers.try_push(72)?'而不是'numbers.push(72);'，表示在无法分配到内存时会通过?将AllocError直接返回给调用者；
 
 ![compiler_builtins](/imgs/linux6.1.no_oom_handling.jpg "compiler_builtins")
 
@@ -226,7 +226,7 @@ module宏对使用者来讲相当的简明扼要，但要实现与C语言实现�
 #[cfg(CONFIG_X="m")]   // Enabled as a module   (`m`)
 #[cfg(not(CONFIG_X))]  // Disabled
 ```
-如果对上面提到的属性比如条件编译cfg、no_std、panic_handler、global_allocator等含义及语法不太熟悉的话，
+如果对上面提到的属性比如条件编译cfg、no_std、panic_handler、global_allocator、feature、stable、unstable等含义及语法不太熟悉的话，
 
 可参考[<font color="blue">Rust Built-in attributes index</font>](https://doc.rust-lang.org/stable/reference/attributes.html#built-in-attributes-index)
 
@@ -301,9 +301,9 @@ $make LLVM=1 -j6
 
 但由于Rust语言本身的复杂性和学习曲线，整体生态还没有大范围进入到人们的日常工作中，市场上对Rust开发者的需求也没有那么多；
 
-不过有了这个小的初始提交的突破，前途是光明的，道路是艰巨的，还需要继续努力发挥和应用好Rust语言及社区已有的成果；
+不过有了这个小的初始提交的突破，前途是光明的，道路是曲折的，还需要继续努力发挥和应用好Rust语言及社区已有的成果；
 
-随着参与Rust语言开发者越来越多，相信在不久的将来，使用Rust语言实现的Linux驱动程序或应用服务定会走进人们的日常工作和生活；
+随着参与Rust语言开发者越来越多，相信在不久的将来，使用Rust语言实现的Linux驱动程序和应用服务定会走进人们的日常工作和生活；
 
 ---
 参考
