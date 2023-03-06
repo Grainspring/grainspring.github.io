@@ -17,10 +17,11 @@ Rust语言宣称具有内存安全和高性能特点，并提出无惧并发的�
 
 对系统编程或Atomic有一定了解的朋友，往往会遇到lock、lock_free、memory ordering、memory barrier、fence、happens-before、synchronizes-with等概念，其中memory barrier和memory ordering的实现还会涉及编译器和处理器，不同编译器与处理器的实现可能会有所不同，这会给大家一个非常庞杂而无法全面把握的印象；
 
-[<font color="blue">Rust Atomics and Locks</font>](https://marabos.nl/atomics/)这本书全面而又精简的以Rust语言视角，解读Atomics和Locks涉及的主要知识点，并提供大量示例代码来说明关键概念和优化事项；
+[<font color="blue">Rust Atomics and Locks</font>](https://marabos.nl/atomics/)这本书全面而精简地以Rust语言为基础，解读Atomics和Locks涉及的主要知识点，并提供大量示例代码来解释关键概念和相关事项；
 
-推荐对并发编程感兴趣的朋友深入阅读，作者[<font color="blue">Mara Bos</font>](https://github.com/m-ou-se)作为Rust标准库维护者具有丰富经验，全面理解相关示例或许会有一定难度，但一定会受益非浅；
-现结合这次阅读还有以前对相关主题的理解，记录相关核心知识点和资料，争取对Atomic相关内容能知其然，知其所以然：
+推荐对并发编程感兴趣的朋友深入阅读，作者[<font color="blue">Mara Bos</font>](https://github.com/m-ou-se)作为Rust标准库维护者具有丰富经验，全面理解相关示例或许会有一定难度，但一定会受益匪浅；
+
+现结合这次阅读还有以前对并发编程相关主题的理解，记录相关核心知识点和资料，争取对Atomic和Lock相关内容知其然，知其所以然能有所帮助：
 
 A.并行开发领域的Linux内核大牛[<font color="blue">Paul E. McKenney</font>](https://paulmck.livejournal.com/)，以前转发过其文章[<font color="blue">Rust语言应该使用什么样的内存模型?</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247483875&idx=1&sn=74af1e8851eea45f9cf2b7e959dd7ff1)，这一次还特别为Rust Atomics and Locks写了书评[<font color="blue">Foreword by Paul E. McKenney</font>](https://marabos.nl/atomics/foreword.html)，他本人十多年来都还在持续更新他的书籍<Is Parallel Programming Hard, And, If So,What Can You Do About It?>；
 
@@ -52,9 +53,11 @@ E.全面准确理解Memory Ordering中定义的Relaxed、Acquire、Release、Acq
 F.对Memory Ordering概念的理解，如果按分布式系统比如git中同步拉取数据，本地读取修改数据，提交存储数据等思路来理解，会将复杂问题简单化，更轻松一些，但细节会有所不同；
 
 觉得比较重要的细节有：
-Relaxed除了可保证原子操作外，还会保证单个原子变量的total modification order，不会对其他共享变量的执行顺序产生约束；
+
+Relaxed除了可保证原子操作外，还会保证对应原子变量的[<font color="blue">total modification order</font>](https://marabos.nl/atomics/memory-ordering.html#relaxed)，不会对其他共享变量的执行顺序产生约束；
 
 Acquire+Release除了对相应原子变量实现原子操作外，还会对其他非原子共享变量的执行顺序产生约束，并设置同步点，在读取检查成功后达到数据同步的目的，并且往往只在两个线程之间直接产生Happens-Before Chain，多个线程之间未必有严格同步保证；
+
 SeqCst则在Acquire+Release基础上实现对所有原子变量的SeqCst操作在所有线程的全局性一致保证；类似分布式系统中执行每一个操作包括读取和存储都要求与数据中心保持同步和一致性；
 
 ---
@@ -80,7 +83,7 @@ J.记录补充一些与C/C++并发开发相关的资料链接；
 
 * [<font color="blue">Locks Aren't Slow; Lock Contention Is</font>](https://preshing.com/20111118/locks-arent-slow-lock-contention-is/)
 
-* [An Introduction to Lock-Free Programming</font>](https://preshing.com/20120612/an-introduction-to-lock-free-programming/)
+* [</font>An Introduction to Lock-Free Programming</font>](https://preshing.com/20120612/an-introduction-to-lock-free-programming/)
 
 * [<font color="blue">Memory Ordering at Compile Time</font>](https://preshing.com/20120625/memory-ordering-at-compile-time/)
 
