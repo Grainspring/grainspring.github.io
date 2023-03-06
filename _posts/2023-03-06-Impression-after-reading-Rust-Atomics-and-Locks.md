@@ -78,12 +78,12 @@ Rust Atomics and Locks[<font color="blue">第8章Operating System Primitives</fo
 I.在Rust Atomics and Locks[<font color="blue">第10章Ideas and Inspiration</font>](https://marabos.nl/atomics/inspiration.html)提到并行开发可能涉及其他数据结构、算法、锁的基础逻辑比如Semaphore、RCU、Parking lot、SequenceLock、crossbeam等，这些新的想法和灵感，或能为未来的并发性能优化提供参考；
 
 ---
-J.记录补充一些与C/C++并发开发相关的资料链接；
+J.补充记录一些与C/C++并发开发相关的资料链接；
 * [<font color="blue">Atomic vs. Non-Atomic Operations</font>](https://preshing.com/20130618/atomic-vs-non-atomic-operations/)
 
 * [<font color="blue">Locks Aren't Slow; Lock Contention Is</font>](https://preshing.com/20111118/locks-arent-slow-lock-contention-is/)
 
-* [</font>An Introduction to Lock-Free Programming</font>](https://preshing.com/20120612/an-introduction-to-lock-free-programming/)
+* [<font>An Introduction to Lock-Free Programming</font>](https://preshing.com/20120612/an-introduction-to-lock-free-programming/)
 
 * [<font color="blue">Memory Ordering at Compile Time</font>](https://preshing.com/20120625/memory-ordering-at-compile-time/)
 
