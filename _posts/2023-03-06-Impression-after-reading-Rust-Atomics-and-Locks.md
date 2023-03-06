@@ -11,23 +11,23 @@ excerpt: Rust for Linux
 
 Rust语言宣称具有内存安全和高性能特点，并提出无惧并发的概念，但究竟何为内存安全?它会涉及哪些方面?在并发和并行计算的环境下是否涉及更多因素?
 
-理论上，内存安全在语言层面能完全解决嘛?还要确保高性能，哪些方面依赖操作系统/内核来提供支持?
+理论上，内存安全在语言层面能完全解决嘛?要实现高性能，还需要操作系统/内核提供哪些方面的支持?
 
 ![overview memory safety complex](/imgs/nasa.image.for.memory.safety.png "overview memory safety complex")
 
-对系统编程或Atomic有一定了解的朋友，往往会遇到lock、lock_free、memory ordering、memory barrier、fence、happens-before、synchronizes-with等概念，其中memory barrier和memory ordering的实现还会涉及编译器和处理器，不同编译器与处理器的实现可能会有所不同，这会给大家一个非常庞杂而无法全面把握的印象；
+对系统编程或Atomic有一定了解的朋友，往往会遇到lock、lock_free、memory ordering、memory barrier、fence、happens-before、synchronizes-with等概念，其中memory barrier和memory ordering的实现还会涉及编译器和处理器，不同编译器与处理器的实现可能会有所不同，这会给大家一个非常庞杂而无法全面掌握的感觉；
 
 [<font color="blue">Rust Atomics and Locks</font>](https://marabos.nl/atomics/)这本书全面而精简地以Rust语言为基础，解读Atomics和Locks涉及的主要知识点，并提供大量示例代码来解释关键概念和相关事项；
 
 推荐对并发编程感兴趣的朋友深入阅读，作者[<font color="blue">Mara Bos</font>](https://github.com/m-ou-se)作为Rust标准库维护者具有丰富经验，全面理解相关示例或许会有一定难度，但一定会受益匪浅；
 
-现结合这次阅读还有以前对并发编程相关主题的理解，记录相关核心知识点和资料，争取对Atomic和Lock相关内容知其然，知其所以然能有所帮助：
+现结合这次阅读还有以前对并发编程相关主题的理解，记录相关核心知识点和资料，争取能对Atomic和Lock相关内容知其然，知其所以然有所帮助：
 
 A.并行开发领域的Linux内核大牛[<font color="blue">Paul E. McKenney</font>](https://paulmck.livejournal.com/)，以前转发过其文章[<font color="blue">Rust语言应该使用什么样的内存模型?</font>](https://mp.weixin.qq.com/s?__biz=MzIxMTM0MjM4Mg==&mid=2247483875&idx=1&sn=74af1e8851eea45f9cf2b7e959dd7ff1)，这一次还特别为Rust Atomics and Locks写了书评[<font color="blue">Foreword by Paul E. McKenney</font>](https://marabos.nl/atomics/foreword.html)，他本人十多年来都还在持续更新他的书籍<Is Parallel Programming Hard, And, If So,What Can You Do About It?>；
 
 ---
 B.内存安全从单线程场景来看往往涉及[<font color="blue">RAII</font>](https://en.cppreference.com/w/cpp/language/raii)概念，包括内存申请、初始化、使用引用借用、析构、释放内存相关操作；
-这个概念最早由C++社区提出，后来Rust社区在其基础上增加所有权和移动的概念，更加细化对象T使用、引用&T、借用&mut T，包括在编译器引入静态borrow checker和lifetime等来保证内存操作的安全；
+这个概念最早由C++社区提出，后来Rust社区在其基础上增加所有权和移动的概念，更加细化对象T使用、引用&T、借用&mut T，包括在编译器引入静态borrow check和lifetime等来保证内存操作的安全；
 
 ---
 C.内存安全从多核多线程并行执行场景来看则更加复杂，毕竟至少涉及多核之间原子操作和同步的问题，其相关概念及理念实践其实一直随着计算机产业的发展在演进；
@@ -47,10 +47,10 @@ Rust Atomics and Locks[<font color="blue">第1章Basics of Rust Concurrency</fon
 E.全面准确理解Memory Ordering中定义的Relaxed、Acquire、Release、AcqRel、SeqCst概念相当重要；
 其[<font color="blue">C++ Memory Ordering规范参考</font>](https://en.cppreference.com/w/cpp/atomic/memory_order)比较晦涩难懂；
 
-相信阅读完Rust Atomics and Locks的[<font color="blue">第2章Atomics</font>](https://marabos.nl/atomics/atomics.html)和[<font color="blue">第3章Memory Ordering</font>](https://marabos.nl/atomics/memory-ordering.html)及加上第[<font color="blue">4章Building Our Own Spin Lock</font>](https://marabos.nl/atomics/building-spinlock.html)、[<font color="blue">5章Building Our Own Channels</font>](https://marabos.nl/atomics/building-channels.html)、[<font color="blue">6章Building Our Own Arc</font>](https://marabos.nl/atomics/building-arc.html)的示例后，对基本认知应该没啥问题；
+相信阅读完Rust Atomics and Locks的[<font color="blue">第2章Atomics</font>](https://marabos.nl/atomics/atomics.html)和[<font color="blue">第3章Memory Ordering</font>](https://marabos.nl/atomics/memory-ordering.html)再加上[<font color="blue">第4章Building Our Own Spin Lock</font>](https://marabos.nl/atomics/building-spinlock.html)、[<font color="blue">第5章Building Our Own Channels</font>](https://marabos.nl/atomics/building-channels.html)、[<font color="blue">第6章Building Our Own Arc</font>](https://marabos.nl/atomics/building-arc.html)的示例后，对基本认知应该没啥问题；
 
 ---
-F.对Memory Ordering概念的理解，如果按分布式系统比如git中同步拉取数据，本地读取修改数据，提交存储数据等思路来理解，会将复杂问题简单化，更轻松一些，但细节会有所不同；
+F.对Memory Ordering概念的理解，如果按分布式系统比如git同步拉取数据，本地读取修改数据，提交存储数据等思路来理解，会将复杂问题简单化，更轻松一些，但细节会有所不同；
 
 觉得比较重要的细节有：
 
@@ -72,10 +72,13 @@ G.Rust Atomics and Locks[<font color="blue">第7章Understanding the Processor</
 
 ---
 H.并发并行计算中对内存进行atomic原子操作是基础，要实现更高级应用往往会需要锁lock，而要实现锁则需要由操作系统/内核的调度机制来提供线程停止执行和可唤醒重新执行的逻辑；
-Rust Atomics and Locks[<font color="blue">第8章Operating System Primitives</font>](https://marabos.nl/atomics/os-primitives.html)中针对这些内容分别对Linux、MacOS、Windows进行介绍；还特别使用futex相关概念及接口在[<font color="blue">第9章Building Our Own Locks</font>](https://marabos.nl/atomics/building-locks.html)实现了Mutex、ConVar、RwLock；
+
+Rust Atomics and Locks[<font color="blue">第8章Operating System Primitives</font>](https://marabos.nl/atomics/os-primitives.html)针对Linux、MacOS、Windows平台对这些与操作系统相关的内容分别进行了介绍；
+
+还特别使用futex相关概念及接口在[<font color="blue">第9章Building Our Own Locks</font>](https://marabos.nl/atomics/building-locks.html)实现了Mutex、ConVar、RwLock；
 
 ---
-I.在Rust Atomics and Locks[<font color="blue">第10章Ideas and Inspiration</font>](https://marabos.nl/atomics/inspiration.html)提到并行开发可能涉及其他数据结构、算法、锁的基础逻辑比如Semaphore、RCU、Parking lot、SequenceLock、crossbeam等，这些新的想法和灵感，或能为未来的并发性能优化提供参考；
+I.在Rust Atomics and Locks[<font color="blue">第10章Ideas and Inspiration</font>](https://marabos.nl/atomics/inspiration.html)提到并发编程可能涉及其他数据结构、算法、锁的基础逻辑比如Semaphore、[<font color="blue">RCU</font>](https://lwn.net/Articles/262464/)、[<font color="blue">Parking lot</font>](https://docs.rs/parking_lot/latest/parking_lot/)、[<font color="blue">SequenceLock</font>](https://docs.rs/seqlock/latest/seqlock/)、[<font color="blue">crossbeam</font>](https://crates.io/crates/crossbeam)等，这些新的想法和灵感，或能为特定的并发性能优化提供参考；
 
 ---
 J.补充记录一些与C/C++并发开发相关的资料链接；
