@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Rust Atomics and Locks读后感"
-date:   2023-03-06 20:06:06
+date:   2023-03-06 06:06:06
 categories: Rust 内存安全 线程安全 Atomic Lock Send Sync
 excerpt: Rust for Linux
 ---
